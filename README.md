@@ -1,5 +1,7 @@
 # Chord Games
 
+**Play it live: https://asgerlp.github.io/guitar-games/**
+
 Browser-based games controlled by chords played on a real electric guitar,
 read via a Roland GP-50 (or any other MIDI source) over the **Web MIDI API**
 — no microphone/pitch-detection involved, so recognition is as accurate as
@@ -33,6 +35,16 @@ Open the printed URL in **Chrome or Edge** (Safari does not support the Web
 MIDI API). Go to **MIDI Setup** to select your GP-50/interface and confirm
 notes show up live, then **Chord Library** to see/customize which chords are
 recognized, then play **Chord Racer**.
+
+## Deployment
+
+Every push to `main` builds and deploys the app to GitHub Pages via
+`.github/workflows/deploy-pages.yml`. Web MIDI needs a secure context, and
+Pages serves over HTTPS, so no extra setup is required to use a connected
+GP-50 there.
+
+One-time repo setup (only needed if the first workflow run doesn't already
+enable it automatically): **Settings → Pages → Source → GitHub Actions**.
 
 ## Customizing chords
 
