@@ -1,9 +1,11 @@
 const STORAGE_KEY = 'guitarGames.racerDifficulty';
 
-// A fresh player starts gentle — slow speed, slow ramp, and generous room
+// A fresh player starts gentle — slow speed, slow ramp, generous room
 // between an obstacle appearing and reaching the car (a low carInset keeps
-// the car near the bottom of the track, maximizing that reaction distance).
-const DEFAULTS = { startSpeed: 70, rampPerSec: 2.5, carInset: 80 };
+// the car near the bottom of the track, maximizing that reaction distance),
+// and a wide gap between obstacles so a lane switch never gets undone by
+// the next obstacle arriving right on top of it.
+const DEFAULTS = { startSpeed: 70, rampPerSec: 2.5, carInset: 80, obstacleGapSec: 1.6 };
 
 const MIN_START_SPEED = 50;
 const MAX_START_SPEED = 260;
@@ -16,6 +18,14 @@ const MAX_RAMP = 12;
 // needing to touch speed at all.
 const MIN_CAR_INSET = 60;
 const MAX_CAR_INSET = 420;
+// obstacleGapSec = the minimum time, in seconds, between one obstacle and
+// the next (see the comment in chordRacer.js's _update for why this is the
+// number that actually governs "can I switch back in time"). This is a
+// manual-only setting rather than part of the adaptive loop below, since
+// it's about giving the player breathing room to operate their instrument,
+// not about raw challenge.
+const MIN_OBSTACLE_GAP_SEC = 0.6;
+const MAX_OBSTACLE_GAP_SEC = 4;
 
 // Below this, the run ended almost immediately — back off. This has to
 // clear the game's own "pure luck" noise floor: with 2 lanes and random
@@ -39,7 +49,7 @@ function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (raw && Number.isFinite(raw.startSpeed) && Number.isFinite(raw.rampPerSec) && Number.isFinite(raw.carInset)) {
-      return raw;
+      return { obstacleGapSec: DEFAULTS.obstacleGapSec, ...raw };
     }
   } catch {
     // fall through to defaults
@@ -78,6 +88,12 @@ export class DifficultyModel {
     save(this.state);
   }
 
+  /** Manually override the gap between obstacles, e.g. from a settings control. */
+  setObstacleGap(value) {
+    this.state = { ...this.state, obstacleGapSec: clamp(value, MIN_OBSTACLE_GAP_SEC, MAX_OBSTACLE_GAP_SEC) };
+    save(this.state);
+  }
+
   /** Call once per finished run. Returns 'up' | 'down' | 'same' for feedback. */
   recordRun({ elapsedSeconds }) {
     let { startSpeed, rampPerSec, carInset } = this.state;
@@ -104,7 +120,7 @@ export class DifficultyModel {
 
     const direction = carInset > this.state.carInset ? 'up' : carInset < this.state.carInset ? 'down' : 'same';
 
-    this.state = { startSpeed, rampPerSec, carInset };
+    this.state = { ...this.state, startSpeed, rampPerSec, carInset };
     save(this.state);
     return direction;
   }

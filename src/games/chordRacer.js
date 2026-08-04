@@ -8,7 +8,15 @@ const OBSTACLE_TYPES = ['tree', 'rock', 'banana', 'barrel'];
 export class ChordRacerGame extends EventTarget {
   constructor(
     canvas,
-    { laneChordIds, detector, keyboardFallback = false, startSpeed = 70, rampPerSec = 2.5, carInset = 80 }
+    {
+      laneChordIds,
+      detector,
+      keyboardFallback = false,
+      startSpeed = 70,
+      rampPerSec = 2.5,
+      carInset = 80,
+      obstacleGapSec = 1.6,
+    }
   ) {
     super();
     this.canvas = canvas;
@@ -20,6 +28,7 @@ export class ChordRacerGame extends EventTarget {
     this.startSpeed = startSpeed;
     this.rampPerSec = rampPerSec;
     this.carInset = carInset;
+    this.obstacleGapSec = obstacleGapSec;
 
     this.currentLaneIndex = Math.floor(this.laneCount / 2);
     this.carX = this._laneCenterX(this.currentLaneIndex);
@@ -27,7 +36,7 @@ export class ChordRacerGame extends EventTarget {
     this.speed = startSpeed;
     this.elapsed = 0;
     this.distance = 0;
-    this.spawnTimer = 1.2;
+    this.spawnTimer = obstacleGapSec + 0.85;
     this.running = false;
 
     this._onChordChange = (e) => this._handleChordChange(e.detail);
@@ -88,8 +97,10 @@ export class ChordRacerGame extends EventTarget {
     // same current speed. It has to stay long enough to switch chords and
     // settle before the next lane call — too short and a dodge into a lane
     // gets immediately undone by the next obstacle already needing you out
-    // of it.
-    const dynamicInterval = Math.max(0.85, 1.7 - this.elapsed * 0.01);
+    // of it. obstacleGapSec is the floor it eases down to; it starts with
+    // some extra breathing room on top and tightens toward that floor as
+    // the run goes on.
+    const dynamicInterval = Math.max(this.obstacleGapSec, this.obstacleGapSec + 0.85 - this.elapsed * 0.01);
     if (this.spawnTimer <= 0) {
       this.spawnTimer = dynamicInterval;
       const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
