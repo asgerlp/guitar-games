@@ -37,12 +37,24 @@ export class MidiManager extends EventTarget {
       this.dispatchEvent(new CustomEvent('disconnected'));
     }
 
+    if (this.currentInputId) return;
+
     // If we don't have a device selected but a previously-remembered one just
     // showed up (e.g. GP-50 powered on after page load), reattach to it.
     const rememberedId = localStorage.getItem('guitarGames.midiDeviceId');
-    if (!this.currentInputId && rememberedId) {
-      const input = [...this.access.inputs.values()].find((i) => i.id === rememberedId);
-      if (input) this.selectInput(input.id);
+    const inputs = [...this.access.inputs.values()];
+    const remembered = rememberedId && inputs.find((i) => i.id === rememberedId);
+    if (remembered) {
+      this.selectInput(remembered.id);
+      return;
+    }
+
+    // Nothing remembered and exactly one device available (the common case of
+    // just the GP-50 plugged in): connect automatically. Without this, the
+    // device sits selected-by-default in the picker's <select> forever,
+    // since browsers don't fire 'change' for an already-selected option.
+    if (!rememberedId && inputs.length === 1) {
+      this.selectInput(inputs[0].id);
     }
   }
 
