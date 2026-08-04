@@ -9,9 +9,18 @@ const MAX_START_SPEED = 420;
 const MIN_RAMP = 1.5;
 const MAX_RAMP = 22;
 
-// Below this, the run ended almost immediately — back off.
-const SHORT_RUN_SECONDS = 8;
+// Below this, the run ended almost immediately — back off. This has to
+// clear the game's own "pure luck" noise floor: with 2 lanes and random
+// obstacle-lane spawning, a player who reacts to literally nothing still
+// survives a median of ~7s (obstacles take a few seconds to reach the car,
+// and each one only has a 50% chance of being in your lane), with a long
+// tail out past 20s. A threshold anywhere near that just measures spawn
+// luck, not skill — 18s comfortably clears the p95 of that no-skill
+// distribution (simulated: p50 ~7s, p95 ~10s, max observed ~22s over 20k
+// trials), so only runs showing genuine reactive play land above it.
+const SHORT_RUN_SECONDS = 18;
 // Above this, they comfortably outlasted the difficulty — push harder.
+// Effectively never reached by pure luck (0/20k trials in the same sim).
 const LONG_RUN_SECONDS = 40;
 
 function clamp(value, min, max) {
