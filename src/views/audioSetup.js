@@ -7,10 +7,9 @@ export function renderAudioSetup(container, ctx) {
     <div class="card">
       <h2>Audio Setup</h2>
       <p class="hint">
-        For gear that can't send MIDI note data (like a Valeton GP-50, which only offers class-compliant
-        USB audio), this pipeline listens to that USB audio signal directly — not your laptop's
-        built-in microphone — and detects chords from the sound itself. Pick the device your
-        guitar/pedal actually appears as below, not the built-in mic.
+        Listens to your USB audio interface/pedal directly — not your laptop's built-in
+        microphone — and detects chords from the sound itself. Pick the device your guitar/pedal
+        actually appears as below, not the built-in mic.
       </p>
       ${!audio.isSupported ? '<p class="banner">This browser doesn’t support audio input capture. Use Chrome or Edge.</p>' : ''}
       <div class="row" id="audio-controls"></div>
@@ -32,6 +31,7 @@ export function renderAudioSetup(container, ctx) {
         <span class="small">Best match:</span>
         <span class="detected-chord" id="live-chord">—</span>
       </p>
+      <p class="small" id="diagnostics">Level: — · closest: —</p>
     </div>
     <div class="card" id="calibrate-panel"></div>
   `;
@@ -39,6 +39,7 @@ export function renderAudioSetup(container, ctx) {
   const controls = container.querySelector('#audio-controls');
   const fills = [...container.querySelectorAll('[data-fill]')];
   const liveChord = container.querySelector('#live-chord');
+  const diagnostics = container.querySelector('#diagnostics');
   const calibratePanel = container.querySelector('#calibrate-panel');
 
   function renderControls() {
@@ -121,6 +122,11 @@ export function renderAudioSetup(container, ctx) {
     smoothed.forEach((v, i) => {
       if (fills[i]) fills[i].style.height = `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;
     });
+
+    const levelText = Number.isFinite(audioDetector.lastLevel) ? `${Math.round(audioDetector.lastLevel)} dB` : '—';
+    const candidate = audioDetector.lastCandidate;
+    const closestText = candidate ? `${candidate.name} (${Math.round(candidate.score * 100)}%)` : '—';
+    diagnostics.textContent = `Level: ${levelText} · closest: ${closestText}`;
   }
 
   function onChordChange(e) {

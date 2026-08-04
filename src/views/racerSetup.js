@@ -5,7 +5,7 @@ import { DifficultyModel } from '../games/difficulty.js';
 const LANE_COUNT_DEFAULT = 2;
 
 export function renderRacer(container, ctx) {
-  const { store, midi, detector } = ctx;
+  const { store, audio, detector } = ctx;
   const difficulty = new DifficultyModel();
 
   let laneCount = LANE_COUNT_DEFAULT;
@@ -36,8 +36,8 @@ export function renderRacer(container, ctx) {
           the longer you survive — switch chords cleanly and quickly to dodge them.
         </p>
         ${
-          !midi.currentInput
-            ? '<p class="banner">No MIDI device connected. Connect your GP-50 under "MIDI Setup", or enable keyboard fallback below to test.</p>'
+          !audio.currentDeviceId
+            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Audio Setup", or enable keyboard fallback below to test.</p>'
             : ''
         }
         ${
