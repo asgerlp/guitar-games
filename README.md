@@ -58,11 +58,27 @@ is stored per-browser in localStorage and can be reset there too.
   whichever chord you've assigned to **Block** during that window to negate
   it. Playing an attack-type chord (Attack/Kick/Special, depending on how
   many chords you assign — 2 to 4, same pattern as Racer's lanes) deals
-  damage, each on its own short cooldown, so switching between chords is
-  what actually wins fights rather than spamming one.
+  damage. Re-playing the same chord does nothing — you have to actually
+  switch chords to act again — and all attack types share one cooldown, so
+  chaining them doesn't stack damage either. Combined with the CPU's own
+  unblocked damage output, that makes ignoring Block and just mashing one
+  chord a losing strategy rather than the easy win it used to be; blocking
+  the telegraphed attacks and countering back is what actually wins,
+  verified by simulating both strategies against the CPU's exact AI before
+  picking the numbers.
+- **Chord Flap** (`src/games/chordFlap.js`) — Flappy-Bird-style: gravity
+  always pulls the bird down, and holding whichever chord is currently
+  marked **active** in the legend applies upward thrust — let go (or play
+  something else) and it falls. The active chord rotates on a randomized
+  timer between your assigned chords (2-4) through the run, so settling
+  into one shape stops working partway through. Physics use velocity drag
+  (like air resistance) rather than a hard speed cap — without it, a
+  hold-or-release control with any real reaction latency oscillates with
+  growing amplitude and crashes almost immediately, which simulation
+  caught before it ever reached a real playtest.
 
-Both games only depend on a generic `chordchange` event
-(`ctx.detector`/`AudioChordDetector`) — neither knows or cares that the
+All three games only depend on a generic `chordchange` event
+(`ctx.detector`/`AudioChordDetector`) — none of them know or care that the
 input is audio-based specifically, so a future input source would work with
 zero game-side changes.
 
@@ -159,6 +175,8 @@ your setup:
   fallback preference (`src/views/racerSetup.js`)
 - Chord Fight's chord-count/action assignment/keyboard fallback preference
   (`src/views/fightSetup.js`)
+- Chord Flap's chord-count/chord assignment/keyboard fallback preference
+  (`src/views/flapSetup.js`)
 
 It's all per-browser (not synced across devices) and namespaced under
 `guitarGames.*` keys — clearing site data resets everything back to

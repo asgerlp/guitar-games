@@ -6,6 +6,7 @@ const MAX_ENTRIES = 10;
 export const GAME_LABELS = {
   racer: 'Chord Racer',
   fight: 'Chord Fight',
+  flap: 'Chord Flap',
 };
 
 function loadAll() {
