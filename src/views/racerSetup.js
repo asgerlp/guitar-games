@@ -88,12 +88,18 @@ export function renderRacer(container, ctx) {
           <span class="small">Start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
           <span class="small">Ramp: <strong>${difficulty.get().rampPerSec.toFixed(1)}</strong> px/s²</span>
           <span class="small">Reaction room: <strong>${Math.round(difficulty.get().carInset)}</strong> px</span>
+          <span class="small">Obstacle gap: <strong>${difficulty.get().obstacleGapSec.toFixed(2)}</strong> s</span>
           <button class="btn" id="reset-difficulty-btn">Reset to default</button>
         </div>
         <div class="row" style="margin-top:0.75rem">
           <label class="small" for="manual-speed">Set start speed manually</label>
           <input type="number" id="manual-speed" min="50" max="260" step="5" value="${Math.round(difficulty.get().startSpeed)}" style="width:5rem" />
           <button class="btn" id="manual-speed-btn">Set</button>
+        </div>
+        <div class="row" style="margin-top:0.75rem">
+          <label class="small" for="manual-gap">Minimum time between obstacles (seconds)</label>
+          <input type="number" id="manual-gap" min="0.6" max="4" step="0.1" value="${difficulty.get().obstacleGapSec.toFixed(2)}" style="width:5rem" />
+          <button class="btn" id="manual-gap-btn">Set</button>
         </div>
       </div>
     `;
@@ -159,6 +165,14 @@ export function renderRacer(container, ctx) {
       }
     });
 
+    container.querySelector('#manual-gap-btn').addEventListener('click', () => {
+      const value = Number(container.querySelector('#manual-gap').value);
+      if (Number.isFinite(value)) {
+        difficulty.setObstacleGap(value);
+        renderSetup();
+      }
+    });
+
     const startBtn = container.querySelector('#start-btn');
     if (startBtn) startBtn.addEventListener('click', renderPlaying);
   }
@@ -195,8 +209,16 @@ export function renderRacer(container, ctx) {
     const canvas = container.querySelector('#racer-canvas');
     const scoreEl = container.querySelector('#hud-score');
 
-    const { startSpeed, rampPerSec, carInset } = difficulty.get();
-    game = new ChordRacerGame(canvas, { laneChordIds, detector, keyboardFallback, startSpeed, rampPerSec, carInset });
+    const { startSpeed, rampPerSec, carInset, obstacleGapSec } = difficulty.get();
+    game = new ChordRacerGame(canvas, {
+      laneChordIds,
+      detector,
+      keyboardFallback,
+      startSpeed,
+      rampPerSec,
+      carInset,
+      obstacleGapSec,
+    });
     game.addEventListener('tick', (e) => {
       scoreEl.textContent = e.detail.score;
     });
