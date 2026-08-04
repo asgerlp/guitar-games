@@ -7,6 +7,7 @@ import { renderAudioSetup } from './views/audioSetup.js';
 import { renderLibrary } from './views/library.js';
 import { renderRacer } from './views/racerSetup.js';
 import { renderFight } from './views/fightSetup.js';
+import { renderHighScores } from './views/highScores.js';
 
 const audio = new AudioInputManager();
 const store = new ChordStore();
@@ -24,6 +25,7 @@ const VIEWS = {
   library: { label: 'Chord Library', render: renderLibrary },
   racer: { label: 'Chord Racer', render: renderRacer },
   fight: { label: 'Chord Fight', render: renderFight },
+  scores: { label: 'High Scores', render: renderHighScores },
 };
 
 const app = document.querySelector('#app');

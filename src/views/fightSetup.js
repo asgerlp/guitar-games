@@ -1,6 +1,7 @@
 import { ChordFightGame, ACTION_DEFS, actionTypesForCount } from '../games/chordFight.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { loadJSON, saveJSON } from '../lib/storage.js';
+import { renderHighScoreSection } from '../lib/highScores.js';
 
 const ACTION_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.fightSetup';
@@ -162,7 +163,7 @@ export function renderFight(container, ctx) {
       playerHpEl.textContent = Math.round(e.detail.playerHealth);
       cpuHpEl.textContent = Math.round(e.detail.cpuHealth);
     });
-    game.addEventListener('gameover', (e) => renderGameOver(e.detail.result));
+    game.addEventListener('gameover', (e) => renderGameOver(e.detail.result, e.detail.score));
     game.start();
 
     container.querySelector('#quit-btn').addEventListener('click', () => {
@@ -172,7 +173,7 @@ export function renderFight(container, ctx) {
     });
   }
 
-  function renderGameOver(result) {
+  function renderGameOver(result, score) {
     const win = result === 'win';
     container.innerHTML = `
       <div class="card game-over-panel">
@@ -181,12 +182,15 @@ export function renderFight(container, ctx) {
         <p class="hint">
           ${win ? 'Nice reflexes — block on time and hit back cleanly for a rematch.' : 'The CPU got the better of you this time. Watch for the wind-up and block it.'}
         </p>
-        <div class="row" style="justify-content:center">
+        <p class="hint">Damage dealt: <strong>${score}</strong></p>
+        <div id="hs-host"></div>
+        <div class="row" style="justify-content:center; margin-top:1rem">
           <button class="btn primary" id="retry-btn">Play again</button>
           <button class="btn" id="setup-btn">Change settings</button>
         </div>
       </div>
     `;
+    renderHighScoreSection(container.querySelector('#hs-host'), 'fight', score);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }
