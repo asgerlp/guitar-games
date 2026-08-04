@@ -1,47 +1,24 @@
 import './style.css';
-import { MidiManager } from './midi/midiManager.js';
 import { AudioInputManager } from './audio/audioInputManager.js';
-import { ChordDetector } from './chords/chordDetector.js';
 import { AudioChordDetector } from './chords/audioChordDetector.js';
-import { InputRouter } from './chords/inputRouter.js';
 import { ChordStore } from './chords/chordStore.js';
-import { midiToName } from './chords/noteUtils.js';
 import { renderHome } from './views/home.js';
-import { renderMidiSetup } from './views/midiSetup.js';
 import { renderAudioSetup } from './views/audioSetup.js';
 import { renderLibrary } from './views/library.js';
 import { renderRacer } from './views/racerSetup.js';
 
-const midi = new MidiManager();
 const audio = new AudioInputManager();
 const store = new ChordStore();
+const detector = new AudioChordDetector();
 
-const midiDetector = new ChordDetector();
-const audioDetector = new AudioChordDetector();
-const detector = new InputRouter();
+detector.setLibrary(store.enabled());
+store.addEventListener('change', () => detector.setLibrary(store.enabled()));
 
-function refreshLibraries() {
-  midiDetector.setLibrary(store.enabled());
-  audioDetector.setLibrary(store.enabled());
-}
-refreshLibraries();
-store.addEventListener('change', refreshLibraries);
-
-midi.addEventListener('noteon', (e) => midiDetector.noteOn(e.detail.note));
-midi.addEventListener('noteoff', (e) => midiDetector.noteOff(e.detail.note));
-midi.addEventListener('disconnected', () => midiDetector.reset());
-midi.addEventListener('connected', () => detector.setActiveSource('midi'));
-
-audio.addEventListener('chroma', (e) => audioDetector.feed(e.detail));
-audio.addEventListener('disconnected', () => audioDetector.reset());
-audio.addEventListener('connected', () => detector.setActiveSource('audio'));
-
-midiDetector.addEventListener('chordchange', (e) => detector.reportChordChange('midi', e.detail));
-audioDetector.addEventListener('chordchange', (e) => detector.reportChordChange('audio', e.detail));
+audio.addEventListener('chroma', (e) => detector.feed(e.detail));
+audio.addEventListener('disconnected', () => detector.reset());
 
 const VIEWS = {
   home: { label: 'Home', render: renderHome },
-  midi: { label: 'MIDI Setup', render: renderMidiSetup },
   audio: { label: 'Audio Setup', render: renderAudioSetup },
   library: { label: 'Chord Library', render: renderLibrary },
   racer: { label: 'Chord Racer', render: renderRacer },
@@ -75,7 +52,7 @@ function navigate(view, params) {
   currentCleanup = VIEWS[view].render(mainEl, ctx, params) || null;
 }
 
-const ctx = { midi, audio, store, midiDetector, audioDetector, detector, navigate };
+const ctx = { audio, store, detector, audioDetector: detector, navigate };
 
 for (const [key, def] of Object.entries(VIEWS)) {
   const btn = document.createElement('button');
@@ -90,19 +67,13 @@ function setInputStatus(ok, text) {
 }
 
 function updateInputStatus() {
-  if (detector.activeSource === 'midi' && midi.currentInput) {
-    setInputStatus(true, `MIDI — ${midi.currentInput.name}`);
-  } else if (detector.activeSource === 'audio' && audio.currentDeviceId) {
+  if (audio.currentDeviceId) {
     setInputStatus(true, `Audio — ${audio.currentDeviceLabel}`);
   } else {
-    setInputStatus(false, 'not connected');
+    setInputStatus(false, audio.isSupported ? 'not connected' : 'unsupported in this browser');
   }
 }
 
-midi.addEventListener('connected', updateInputStatus);
-midi.addEventListener('disconnected', updateInputStatus);
-midi.addEventListener('unsupported', updateInputStatus);
-midi.addEventListener('deviceschanged', updateInputStatus);
 audio.addEventListener('connected', updateInputStatus);
 audio.addEventListener('disconnected', updateInputStatus);
 
@@ -113,9 +84,8 @@ detector.addEventListener('chordchange', (e) => {
 });
 
 updateInputStatus();
-midi.init();
 
 navigate('home');
 
 // Handy in the console for debugging while wiring up hardware.
-window.__guitarGames = { midi, audio, store, midiDetector, audioDetector, detector, midiToName };
+window.__guitarGames = { audio, store, detector };

@@ -4,8 +4,8 @@ const FRETS_SHOWN = 4;
  * Render a standard guitar chord diagram (fretboard, nut, x/o markers, and
  * dots) as an inline SVG string. `frets` is one entry per string, low E to
  * high e: -1 = muted, 0 = open, n = fretted at n. Returns '' when there's no
- * shape to draw (e.g. a custom chord recorded from MIDI notes only, with no
- * known fingering).
+ * shape to draw (e.g. a custom chord captured from audio only, with no known
+ * fingering).
  */
 export function renderChordDiagram(frets, { width = 64, height = 82 } = {}) {
   if (!frets || frets.length === 0) return '';

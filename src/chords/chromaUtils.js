@@ -15,11 +15,18 @@ export function computeChroma(freqDataDb, sampleRate, fftSize) {
   const minBin = Math.max(1, Math.floor(MIN_FREQ / binHz));
   const maxBin = Math.min(freqDataDb.length - 1, Math.ceil(MAX_FREQ / binHz));
 
-  let totalEnergy = 0;
+  // Peak dB in the guitar range, not a raw summed amplitude: a sum scales
+  // with however many bins happen to be in range, which has no consistent
+  // meaning across different fftSizes/sample rates and made "is anything
+  // being played" impossible to threshold sensibly. Peak dB is bounded by
+  // the analyser's own min/maxDecibels, so a fixed cutoff actually works.
+  let peakDb = -Infinity;
 
   for (let i = minBin; i <= maxBin; i++) {
     const db = freqDataDb[i];
     if (!Number.isFinite(db)) continue;
+    if (db > peakDb) peakDb = db;
+
     const amplitude = 10 ** (db / 20);
     if (amplitude < 1e-6) continue;
 
@@ -27,7 +34,6 @@ export function computeChroma(freqDataDb, sampleRate, fftSize) {
     const midiFloat = 69 + 12 * Math.log2(freq / 440);
     const pitchClass = ((Math.round(midiFloat) % 12) + 12) % 12;
     chroma[pitchClass] += amplitude;
-    totalEnergy += amplitude;
   }
 
   const max = Math.max(...chroma);
@@ -35,7 +41,7 @@ export function computeChroma(freqDataDb, sampleRate, fftSize) {
     for (let i = 0; i < 12; i++) chroma[i] /= max;
   }
 
-  return { chroma, level: totalEnergy };
+  return { chroma, level: peakDb };
 }
 
 /** Derive a binary chroma template from a set of absolute MIDI notes. */

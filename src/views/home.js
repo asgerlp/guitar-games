@@ -3,9 +3,9 @@ export function renderHome(container, ctx) {
     <div class="card">
       <h2>Welcome</h2>
       <p class="hint">
-        Connect your GP-50 (via a MIDI interface into your Mac) and it'll show up under
-        <strong>MIDI Setup</strong>. Chord recognition works from the actual MIDI notes your
-        gear sends — no microphone involved. Head to <strong>Chord Library</strong> to see or
+        Connect your guitar's USB audio interface/pedal and it'll show up under
+        <strong>Audio Setup</strong> — pick it there (not your laptop's built-in mic) and chord
+        recognition runs on that signal directly. Head to <strong>Chord Library</strong> to see or
         customize which chords are recognized, then pick a game below.
       </p>
     </div>

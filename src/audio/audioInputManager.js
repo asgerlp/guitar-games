@@ -3,11 +3,11 @@ import { computeChroma } from '../chords/chromaUtils.js';
 const FFT_SIZE = 16384;
 
 /**
- * Web Audio equivalent of MidiManager: picks a specific input device (e.g. a
- * USB audio interface like the GP-50's own audio output, not just the
- * built-in mic), analyses it in real time, and emits per-frame chroma
- * vectors for chord matching. Unlike MIDI, getUserMedia requires an explicit
- * user gesture/permission — there's no silent auto-connect on page load.
+ * Picks a specific audio input device (e.g. a USB audio interface/pedal's
+ * own output, not the built-in mic), analyses it in real time, and emits
+ * per-frame chroma vectors for chord matching. getUserMedia requires an
+ * explicit user gesture/permission, so there's no silent auto-connect on
+ * page load — the user has to click to enable it each session.
  */
 export class AudioInputManager extends EventTarget {
   constructor() {
@@ -62,6 +62,11 @@ export class AudioInputManager extends EventTarget {
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = FFT_SIZE;
     this.analyser.smoothingTimeConstant = 0.15;
+    // Default maxDecibels (-30) clips anything louder than that to the same
+    // ceiling, which flattens out exactly the peak-level detail silence
+    // gating depends on. Widen it so real playing levels aren't clipped.
+    this.analyser.minDecibels = -100;
+    this.analyser.maxDecibels = -10;
     this.sourceNode.connect(this.analyser);
 
     const track = stream.getAudioTracks()[0];
