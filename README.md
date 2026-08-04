@@ -2,10 +2,21 @@
 
 **Play it live: https://asgerlp.github.io/guitar-games/**
 
-Browser-based games controlled by chords played on a real electric guitar,
-read via a Roland GP-50 (or any other MIDI source) over the **Web MIDI API**
-— no microphone/pitch-detection involved, so recognition is as accurate as
-your gear's own note tracking.
+Browser-based games controlled by chords played on a real electric guitar.
+Two input pipelines are supported:
+
+- **MIDI** (`src/midi/`), for gear that outputs a MIDI note per string (e.g.
+  Roland's GK-pickup-based synth gear) over the **Web MIDI API** — no audio
+  analysis involved, so recognition is as accurate as your gear's own note
+  tracking.
+- **USB audio** (`src/audio/`), for gear that's class-compliant USB audio but
+  has no MIDI note output at all — common on affordable modeling
+  pedals/interfaces (e.g. a Valeton GP-50). This reads the device's actual
+  audio signal directly via the Web Audio API — **not** the laptop's built-in
+  microphone — and detects chords from the sound itself.
+
+Whichever pipeline is active feeds the same "chord changed" event, so games
+don't know or care which one is in use.
 
 ![Chord Racer gameplay: a car dodging obstacles across two lanes, one per chord](docs/screenshot-chord-racer.png)
 
@@ -39,9 +50,10 @@ npm run dev
 ```
 
 Open the printed URL in **Chrome or Edge** (Safari does not support the Web
-MIDI API). Go to **MIDI Setup** to select your GP-50/interface and confirm
-notes show up live, then **Chord Library** to see/customize which chords are
-recognized, then play **Chord Racer**.
+MIDI API). Go to **MIDI Setup** or **Audio Setup** — whichever matches your
+gear — to connect your device and confirm it's being read correctly, then
+**Chord Library** to see/customize which chords are recognized, then play
+**Chord Racer**.
 
 ## Deployment
 
@@ -80,3 +92,28 @@ note-event flow, but real-hardware verification (exact note numbers your
 GP-50 sends per string/channel, timing feel of the strum debounce) is still
 worth doing on your end — tweak `SETTLE_MS`/`MATCH_THRESHOLD` in
 `chordDetector.js` if strums feel laggy or chords misfire.
+
+## Audio input (for gear without MIDI note output)
+
+Some gear — including a Valeton GP-50, despite the name overlap with Roland's
+MIDI-capable GP-50 — only exposes itself as a class-compliant USB **audio**
+interface, with no per-note MIDI output at all. **Audio Setup** covers that
+case: pick that device (not the built-in mic) from the dropdown there, and
+`src/audio/audioInputManager.js` reads it directly via `getUserMedia` +
+`AnalyserNode`.
+
+Matching works by chroma analysis (`src/chords/chromaUtils.js`): each
+animation frame's FFT bins are folded into a 12-element vector — one bucket
+per pitch class, octave-collapsed — then compared via cosine similarity
+against each chord's template
+(`src/chords/audioChordDetector.js`). Default chords derive a template
+automatically from their MIDI note list, so no extra data entry is needed;
+custom or recalibrated chords can instead carry their own `chroma` array
+captured live from **Audio Setup → Calibrate from audio**, which is worth
+doing if a chord isn't matching reliably, since guitars/pickups/pedals all
+sound a little different.
+
+Both pipelines dispatch the same `chordchange` shape into a small router
+(`src/chords/inputRouter.js`), which is what games actually listen to —
+whichever source connected most recently becomes "active", and Chord Racer
+(or any future game) never needs to know which one is in use.
