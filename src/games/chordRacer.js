@@ -124,14 +124,72 @@ export class ChordRacerGame extends EventTarget {
     }
     ctx.setLineDash([]);
 
-    ctx.fillStyle = '#ff5c6c';
     for (const ob of this.obstacles) {
       const x = this._laneCenterX(ob.lane);
-      ctx.fillRect(x - OBSTACLE_HALF_WIDTH, ob.y - 18, OBSTACLE_HALF_WIDTH * 2, 36);
+      this._drawCar(x, ob.y, OBSTACLE_HALF_WIDTH * 2, 40, {
+        body: '#ff5c6c',
+        cabin: '#5c1620',
+        facing: 'down',
+      });
     }
 
     const carY = canvas.height - 90;
-    ctx.fillStyle = '#5ad1a8';
-    ctx.fillRect(this.carX - CAR_HALF_WIDTH, carY - 20, CAR_HALF_WIDTH * 2, 40);
+    this._drawCar(this.carX, carY, CAR_HALF_WIDTH * 2, 44, {
+      body: '#5ad1a8',
+      cabin: '#0f3226',
+      facing: 'up',
+    });
+  }
+
+  /** Draw a simple top-down car sprite centered at (cx, cy). */
+  _drawCar(cx, cy, width, height, { body, cabin, facing }) {
+    const ctx = this.ctx;
+    const halfW = width / 2;
+    const halfH = height / 2;
+    const noseUp = facing === 'up';
+
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    // Wheels: four nubs that clearly poke out past the body's sides, in a
+    // mid-tone that reads against both the dark road and the body color.
+    const wheelW = 7;
+    const wheelH = height * 0.34;
+    const wheelInsetY = halfH - wheelH / 2 - 2;
+    ctx.fillStyle = '#4a5268';
+    for (const side of [-1, 1]) {
+      for (const dir of [-1, 1]) {
+        ctx.beginPath();
+        ctx.roundRect(side * halfW - (side > 0 ? 1 : wheelW - 1), dir * wheelInsetY - wheelH / 2, wheelW, wheelH, 2);
+        ctx.fill();
+      }
+    }
+
+    // Body, with a thin dark outline so it stays legible against similarly
+    // dark obstacles/background.
+    ctx.fillStyle = body;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(-halfW, -halfH, width, height, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Cabin/roof block, offset toward the nose so which way the car is
+    // facing is obvious even at a glance.
+    const cabinH = height * 0.46;
+    const cabinY = noseUp ? -halfH + 5 : halfH - 5 - cabinH;
+    ctx.fillStyle = cabin;
+    ctx.beginPath();
+    ctx.roundRect(-halfW + 8, cabinY, width - 16, cabinH, 5);
+    ctx.fill();
+
+    // Headlights at the nose edge.
+    ctx.fillStyle = '#fff6d8';
+    const lightY = noseUp ? -halfH + 2 : halfH - 6;
+    ctx.fillRect(-halfW + 4, lightY, 7, 4);
+    ctx.fillRect(halfW - 11, lightY, 7, 4);
+
+    ctx.restore();
   }
 }
