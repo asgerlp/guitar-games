@@ -1,7 +1,11 @@
+import { renderChordDiagram } from '../chords/chordDiagram.js';
+import { MATCH_THRESHOLD } from '../chords/audioChordDetector.js';
+
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export function renderAudioSetup(container, ctx) {
   const { audio, audioDetector, store } = ctx;
+  let wizardIndex = 0;
 
   container.innerHTML = `
     <div class="card">
@@ -28,18 +32,22 @@ export function renderAudioSetup(container, ctx) {
         ).join('')}
       </div>
       <p class="row" style="margin-top:0.75rem">
-        <span class="small">Best match:</span>
+        <span class="small">Closest chord:</span>
         <span class="detected-chord" id="live-chord">—</span>
       </p>
-      <p class="small" id="diagnostics">Level: — · closest: —</p>
+      <p class="small" id="match-status"></p>
+      <p class="small" id="level-readout">Level: —</p>
     </div>
+    <div class="card" id="wizard-panel"></div>
     <div class="card" id="calibrate-panel"></div>
   `;
 
   const controls = container.querySelector('#audio-controls');
   const fills = [...container.querySelectorAll('[data-fill]')];
   const liveChord = container.querySelector('#live-chord');
-  const diagnostics = container.querySelector('#diagnostics');
+  const matchStatus = container.querySelector('#match-status');
+  const levelReadout = container.querySelector('#level-readout');
+  const wizardPanel = container.querySelector('#wizard-panel');
   const calibratePanel = container.querySelector('#calibrate-panel');
 
   function renderControls() {
@@ -76,14 +84,75 @@ export function renderAudioSetup(container, ctx) {
     controls.querySelector('#disconnect-btn').addEventListener('click', () => audio.stop());
   }
 
+  // --- guided calibration wizard: walk through the chords you actually
+  // have enabled, one at a time, capturing each one's live sound. This is
+  // the recommended first-run flow, since defaults derived from theoretical
+  // note lists rarely cosine-match real guitar audio closely enough on
+  // their own. ------------------------------------------------------------
+  function renderWizard() {
+    const chords = store.enabled();
+    const hasInput = !!audio.currentDeviceId;
+
+    if (chords.length === 0) {
+      wizardPanel.innerHTML = `
+        <h2>Calibrate your chords</h2>
+        <p class="hint">Enable some chords in the Chord Library first, then come back here.</p>
+      `;
+      return;
+    }
+
+    if (wizardIndex >= chords.length) {
+      wizardPanel.innerHTML = `
+        <h2>Calibrate your chords</h2>
+        <p class="hint">All ${chords.length} enabled chords calibrated. Head to Chord Racer to play, or restart to redo them.</p>
+        <button class="btn" id="wizard-restart">Restart calibration</button>
+      `;
+      wizardPanel.querySelector('#wizard-restart').addEventListener('click', () => {
+        wizardIndex = 0;
+        renderWizard();
+      });
+      return;
+    }
+
+    const chord = chords[wizardIndex];
+    wizardPanel.innerHTML = `
+      <h2>Calibrate your chords</h2>
+      <p class="hint">
+        Walk through each chord you use and capture its real sound — this matters more than
+        anything else here, since it's what actually drives recognition.
+      </p>
+      <p class="small">Chord ${wizardIndex + 1} of ${chords.length}</p>
+      <div class="row" style="align-items:center; gap:1.25rem">
+        <div class="detected-chord">${chord.name}</div>
+        ${chord.frets ? renderChordDiagram(chord.frets) : ''}
+      </div>
+      <p class="hint">Strum and hold ${chord.name}, then capture.</p>
+      <div class="row">
+        <button class="btn primary" id="wizard-capture" ${hasInput ? '' : 'disabled'}>Capture ${chord.name}</button>
+        <button class="btn" id="wizard-skip">Skip</button>
+      </div>
+      ${!hasInput ? '<p class="small" style="margin-top:0.5rem">Enable audio input above first.</p>' : ''}
+    `;
+
+    wizardPanel.querySelector('#wizard-capture').addEventListener('click', () => {
+      store.upsert({ id: chord.id, name: chord.name, source: chord.source, chroma: audioDetector.getSmoothedChroma() });
+      wizardIndex++;
+      renderWizard();
+    });
+    wizardPanel.querySelector('#wizard-skip').addEventListener('click', () => {
+      wizardIndex++;
+      renderWizard();
+    });
+  }
+
   function renderCalibratePanel() {
     const chords = store.list();
     const hasInput = !!audio.currentDeviceId;
     calibratePanel.innerHTML = `
-      <h2>Calibrate from audio</h2>
+      <h2>Recalibrate or add a custom chord</h2>
       <p class="hint">
-        Every guitar/pickup/pedal sounds a little different. If a chord isn't matching reliably,
-        strum and hold it clearly, then capture its live sound as that chord's audio reference.
+        For one-off recalibration of a specific chord, or adding a brand new one that isn't in
+        the guided list above.
       </p>
       <div class="row">
         <select id="calibrate-select">
@@ -123,15 +192,24 @@ export function renderAudioSetup(container, ctx) {
       if (fills[i]) fills[i].style.height = `${Math.round(Math.max(0, Math.min(1, v)) * 100)}%`;
     });
 
-    const levelText = Number.isFinite(audioDetector.lastLevel) ? `${Math.round(audioDetector.lastLevel)} dB` : '—';
-    const candidate = audioDetector.lastCandidate;
-    const closestText = candidate ? `${candidate.name} (${Math.round(candidate.score * 100)}%)` : '—';
-    diagnostics.textContent = `Level: ${levelText} · closest: ${closestText}`;
-  }
+    levelReadout.textContent = Number.isFinite(audioDetector.lastLevel)
+      ? `Level: ${Math.round(audioDetector.lastLevel)} dB`
+      : 'Level: —';
 
-  function onChordChange(e) {
-    const match = e.detail;
-    liveChord.textContent = match ? `${match.name} (${Math.round(match.score * 100)}%)` : '—';
+    const candidate = audioDetector.lastCandidate;
+    if (!candidate) {
+      liveChord.textContent = '—';
+      matchStatus.textContent = '';
+      liveChord.classList.remove('active');
+      return;
+    }
+
+    liveChord.textContent = `${candidate.name} (${Math.round(candidate.score * 100)}%)`;
+    const isCommitted = audioDetector.current?.id === candidate.id;
+    liveChord.classList.toggle('active', isCommitted);
+    matchStatus.textContent = isCommitted
+      ? '✓ matched — this is what games will react to'
+      : `not confident enough yet (need ${Math.round(MATCH_THRESHOLD * 100)}%) — try calibrating this chord below`;
   }
 
   function onStoreChange() {
@@ -141,23 +219,26 @@ export function renderAudioSetup(container, ctx) {
   audio.addEventListener('connected', renderControls);
   audio.addEventListener('disconnected', renderControls);
   audio.addEventListener('deviceschanged', renderControls);
+  audio.addEventListener('connected', renderWizard);
+  audio.addEventListener('disconnected', renderWizard);
   audio.addEventListener('connected', renderCalibratePanel);
   audio.addEventListener('disconnected', renderCalibratePanel);
   audio.addEventListener('chroma', onChroma);
-  audioDetector.addEventListener('chordchange', onChordChange);
   store.addEventListener('change', onStoreChange);
 
   renderControls();
+  renderWizard();
   renderCalibratePanel();
 
   return () => {
     audio.removeEventListener('connected', renderControls);
     audio.removeEventListener('disconnected', renderControls);
+    audio.removeEventListener('connected', renderWizard);
+    audio.removeEventListener('disconnected', renderWizard);
     audio.removeEventListener('connected', renderCalibratePanel);
     audio.removeEventListener('disconnected', renderCalibratePanel);
     audio.removeEventListener('deviceschanged', renderControls);
     audio.removeEventListener('chroma', onChroma);
-    audioDetector.removeEventListener('chordchange', onChordChange);
     store.removeEventListener('change', onStoreChange);
   };
 }

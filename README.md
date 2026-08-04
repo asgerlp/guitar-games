@@ -76,15 +76,23 @@ diagrams shown in the Chord Library, the Chord Racer lane picker, and as a
 live legend while playing.
 
 Those default notes are also what the audio pipeline derives its initial
-chroma-matching template from. If a chord isn't matching reliably — every
-guitar/pickup/pedal sounds a little different — go to **Audio Setup →
-Calibrate from audio**, strum and hold the chord clearly, and capture its
-actual live sound as that chord's reference. You can also add entirely new
-custom chords the same way, from a name and a captured sound alone. Custom
-chords captured purely from audio have no known fretboard shape, so they show
-"no diagram" in the Chord Library instead — recalibrating a default chord's
-sound keeps its diagram, since only the reference sound changes, not the
-shape.
+chroma-matching template from — a theoretical approximation that rarely
+cosine-matches real guitar audio as tightly as a captured reference would,
+since every guitar/pickup/pedal sounds a little different. **Audio Setup**
+leads with a guided **"Calibrate your chords"** wizard for exactly this: it
+steps through your enabled chords one at a time (with a diagram as a
+reminder of the shape) so you capture each one's actual live sound as its
+reference before you ever try to play a game. There's also a freeform
+"Recalibrate or add a custom chord" panel below it for one-off touch-ups or
+adding chords outside the guided list. Custom chords captured purely from
+audio have no known fretboard shape, so they show "no diagram" in the Chord
+Library instead — recalibrating a default chord's sound keeps its diagram,
+since only the reference sound changes, not the shape.
+
+The live monitor always shows the closest-matching chord and its score, even
+below the confidence threshold needed to actually commit as a match (labeled
+"not confident enough yet" vs. "✓ matched") — so a low match isn't a mystery,
+it's a direct nudge toward calibrating that chord.
 
 ## Audio pipeline internals / tuning
 
