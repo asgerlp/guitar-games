@@ -63,14 +63,21 @@ export function renderRacer(container, ctx) {
       <div class="card">
         <h2>Difficulty</h2>
         <p class="hint">
-          Speed adapts to you automatically: a run that ends almost instantly backs it off, a run
-          you comfortably survive pushes it up, and everything in between nudges it up gently over
-          time. No settings to tune by hand.
+          Adapts to you automatically: a run that ends almost instantly backs off and gives you
+          more room to react, a run you comfortably survive shortens that room to make you react
+          faster, and everything in between nudges it up gently over time. Speed only creeps up
+          slightly on its own — reaction room is the main thing that changes.
         </p>
         <div class="row">
-          <span class="small">Current start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
+          <span class="small">Start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
           <span class="small">Ramp: <strong>${difficulty.get().rampPerSec.toFixed(1)}</strong> px/s²</span>
+          <span class="small">Reaction room: <strong>${Math.round(difficulty.get().carInset)}</strong> px</span>
           <button class="btn" id="reset-difficulty-btn">Reset to default</button>
+        </div>
+        <div class="row" style="margin-top:0.75rem">
+          <label class="small" for="manual-speed">Set start speed manually</label>
+          <input type="number" id="manual-speed" min="50" max="260" step="5" value="${Math.round(difficulty.get().startSpeed)}" style="width:5rem" />
+          <button class="btn" id="manual-speed-btn">Set</button>
         </div>
       </div>
     `;
@@ -125,6 +132,14 @@ export function renderRacer(container, ctx) {
       renderSetup();
     });
 
+    container.querySelector('#manual-speed-btn').addEventListener('click', () => {
+      const value = Number(container.querySelector('#manual-speed').value);
+      if (Number.isFinite(value)) {
+        difficulty.setStartSpeed(value);
+        renderSetup();
+      }
+    });
+
     const startBtn = container.querySelector('#start-btn');
     if (startBtn) startBtn.addEventListener('click', renderPlaying);
   }
@@ -153,7 +168,7 @@ export function renderRacer(container, ctx) {
             )
             .join('')}
         </div>
-        <canvas id="racer-canvas" width="480" height="640"></canvas>
+        <canvas id="racer-canvas" width="480" height="760"></canvas>
         <button class="btn" id="quit-btn">Quit to setup</button>
       </div>
     `;
@@ -161,8 +176,8 @@ export function renderRacer(container, ctx) {
     const canvas = container.querySelector('#racer-canvas');
     const scoreEl = container.querySelector('#hud-score');
 
-    const { startSpeed, rampPerSec } = difficulty.get();
-    game = new ChordRacerGame(canvas, { laneChordIds, detector, keyboardFallback, startSpeed, rampPerSec });
+    const { startSpeed, rampPerSec, carInset } = difficulty.get();
+    game = new ChordRacerGame(canvas, { laneChordIds, detector, keyboardFallback, startSpeed, rampPerSec, carInset });
     game.addEventListener('tick', (e) => {
       scoreEl.textContent = e.detail.score;
     });
@@ -181,8 +196,8 @@ export function renderRacer(container, ctx) {
 
   function renderGameOver(score, direction) {
     const feedback = {
-      up: "Nice run — next one starts a little faster.",
-      down: "That was over fast — next one starts a little slower so you can find your footing.",
+      up: "Nice run — next one gives you a little less room to react.",
+      down: "That was over fast — next one gives you more room to react so you can find your footing.",
       same: 'Difficulty holding steady for the next run.',
     }[direction];
 
