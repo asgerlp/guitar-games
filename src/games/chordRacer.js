@@ -1,6 +1,4 @@
-const BASE_SPEED = 150; // px/s
-const MAX_SPEED = 560; // px/s
-const RAMP_PER_SEC = 7; // px/s gained per second survived
+const MAX_SPEED = 800; // px/s hard cap, independent of adaptive difficulty
 const CAR_HALF_WIDTH = 26;
 const OBSTACLE_HALF_WIDTH = 30;
 const HIT_HALF_HEIGHT = 28;
@@ -8,7 +6,7 @@ const OBSTACLE_TYPES = ['tree', 'rock', 'banana', 'barrel'];
 
 /** Canvas-driven "dodge obstacles by switching lanes/chords" game. */
 export class ChordRacerGame extends EventTarget {
-  constructor(canvas, { laneChordIds, detector, keyboardFallback = false }) {
+  constructor(canvas, { laneChordIds, detector, keyboardFallback = false, startSpeed = 90, rampPerSec = 4 }) {
     super();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -16,11 +14,13 @@ export class ChordRacerGame extends EventTarget {
     this.laneCount = laneChordIds.length;
     this.detector = detector;
     this.keyboardFallback = keyboardFallback;
+    this.startSpeed = startSpeed;
+    this.rampPerSec = rampPerSec;
 
     this.currentLaneIndex = Math.floor(this.laneCount / 2);
     this.carX = this._laneCenterX(this.currentLaneIndex);
     this.obstacles = [];
-    this.speed = BASE_SPEED;
+    this.speed = startSpeed;
     this.elapsed = 0;
     this.distance = 0;
     this.spawnTimer = 0.6;
@@ -72,7 +72,7 @@ export class ChordRacerGame extends EventTarget {
 
   _update(dt) {
     this.elapsed += dt;
-    this.speed = Math.min(MAX_SPEED, BASE_SPEED + this.elapsed * RAMP_PER_SEC);
+    this.speed = Math.min(MAX_SPEED, this.startSpeed + this.elapsed * this.rampPerSec);
     this.distance += this.speed * dt;
 
     const targetX = this._laneCenterX(this.currentLaneIndex);
@@ -107,7 +107,11 @@ export class ChordRacerGame extends EventTarget {
 
   _gameOver() {
     this.stop();
-    this.dispatchEvent(new CustomEvent('gameover', { detail: { score: Math.floor(this.distance / 10) } }));
+    this.dispatchEvent(
+      new CustomEvent('gameover', {
+        detail: { score: Math.floor(this.distance / 10), elapsedSeconds: this.elapsed },
+      })
+    );
   }
 
   _draw() {

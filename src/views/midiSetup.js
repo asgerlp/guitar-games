@@ -43,7 +43,17 @@ export function renderMidiSetup(container, ctx) {
     select.innerHTML = inputs.length
       ? inputs.map((i) => `<option value="${i.id}">${i.name}</option>`).join('')
       : '<option value="">No MIDI devices found</option>';
-    if (midi.currentInputId) select.value = midi.currentInputId;
+
+    if (midi.currentInputId) {
+      select.value = midi.currentInputId;
+    } else if (inputs.length) {
+      // Nothing connected yet. The <select> will default to showing the
+      // first device regardless — connect to match what's actually on
+      // screen, since a browser 'change' event never fires for a click on
+      // an option that was already the default selection.
+      select.value = inputs[0].id;
+      midi.selectInput(inputs[0].id);
+    }
   }
 
   renderDeviceList();

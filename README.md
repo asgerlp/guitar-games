@@ -24,6 +24,13 @@ the keyboard fallback since no physical GP-50 was available in this environment.
 3. Games subscribe to chord-change events and react — e.g. Chord Racer steers
    a car into whichever lane's assigned chord you're currently holding.
 
+Chord Racer's speed is adaptive rather than fixed (`src/games/difficulty.js`):
+it starts gentle, and after every run backs off if you crashed almost
+immediately, pushes up if you comfortably survived, or nudges up slightly
+otherwise — so it settles near your actual skill level instead of hitting a
+beginner with the same speed as an expert. This is stored per-browser in
+localStorage and can be reset from the Chord Racer setup screen.
+
 ## Running it
 
 ```sh
@@ -43,8 +50,11 @@ Every push to `main` builds and deploys the app to GitHub Pages via
 Pages serves over HTTPS, so no extra setup is required to use a connected
 GP-50 there.
 
-One-time repo setup (only needed if the first workflow run doesn't already
-enable it automatically): **Settings → Pages → Source → GitHub Actions**.
+One-time repo setup, required before the very first successful deploy:
+**Settings → Pages → Source → GitHub Actions**. GitHub's `GITHUB_TOKEN`
+can't create a Pages site for the first time via the API (only a human
+clicking that setting can), so this step can't be automated away — but once
+it's done, every future push deploys with no further action needed.
 
 ## Customizing chords
 

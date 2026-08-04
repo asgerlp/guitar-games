@@ -1,10 +1,12 @@
 import { ChordRacerGame } from '../games/chordRacer.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
+import { DifficultyModel } from '../games/difficulty.js';
 
 const LANE_COUNT_DEFAULT = 2;
 
 export function renderRacer(container, ctx) {
   const { store, midi, detector } = ctx;
+  const difficulty = new DifficultyModel();
 
   let laneCount = LANE_COUNT_DEFAULT;
   let laneChordIds = [];
@@ -58,6 +60,19 @@ export function renderRacer(container, ctx) {
           <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
         </div>
       </div>
+      <div class="card">
+        <h2>Difficulty</h2>
+        <p class="hint">
+          Speed adapts to you automatically: a run that ends almost instantly backs it off, a run
+          you comfortably survive pushes it up, and everything in between nudges it up gently over
+          time. No settings to tune by hand.
+        </p>
+        <div class="row">
+          <span class="small">Current start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
+          <span class="small">Ramp: <strong>${difficulty.get().rampPerSec.toFixed(1)}</strong> px/s²</span>
+          <button class="btn" id="reset-difficulty-btn">Reset to default</button>
+        </div>
+      </div>
     `;
 
     const lanePick = container.querySelector('#lane-pick');
@@ -105,6 +120,11 @@ export function renderRacer(container, ctx) {
       keyboardFallback = e.target.checked;
     });
 
+    container.querySelector('#reset-difficulty-btn').addEventListener('click', () => {
+      difficulty.reset();
+      renderSetup();
+    });
+
     const startBtn = container.querySelector('#start-btn');
     if (startBtn) startBtn.addEventListener('click', renderPlaying);
   }
@@ -141,11 +161,15 @@ export function renderRacer(container, ctx) {
     const canvas = container.querySelector('#racer-canvas');
     const scoreEl = container.querySelector('#hud-score');
 
-    game = new ChordRacerGame(canvas, { laneChordIds, detector, keyboardFallback });
+    const { startSpeed, rampPerSec } = difficulty.get();
+    game = new ChordRacerGame(canvas, { laneChordIds, detector, keyboardFallback, startSpeed, rampPerSec });
     game.addEventListener('tick', (e) => {
       scoreEl.textContent = e.detail.score;
     });
-    game.addEventListener('gameover', (e) => renderGameOver(e.detail.score));
+    game.addEventListener('gameover', (e) => {
+      const direction = difficulty.recordRun({ elapsedSeconds: e.detail.elapsedSeconds });
+      renderGameOver(e.detail.score, direction);
+    });
     game.start();
 
     container.querySelector('#quit-btn').addEventListener('click', () => {
@@ -155,12 +179,18 @@ export function renderRacer(container, ctx) {
     });
   }
 
-  function renderGameOver(score) {
+  function renderGameOver(score, direction) {
+    const feedback = {
+      up: "Nice run — next one starts a little faster.",
+      down: "That was over fast — next one starts a little slower so you can find your footing.",
+      same: 'Difficulty holding steady for the next run.',
+    }[direction];
+
     container.innerHTML = `
       <div class="card game-over-panel">
         <h2>Game Over</h2>
         <div class="score">${score}</div>
-        <p class="hint">Try switching chords faster and cleaner to react quicker next run.</p>
+        <p class="hint">${feedback}</p>
         <div class="row" style="justify-content:center">
           <button class="btn primary" id="retry-btn">Play again</button>
           <button class="btn" id="setup-btn">Change settings</button>
