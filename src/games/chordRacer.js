@@ -27,7 +27,7 @@ export class ChordRacerGame extends EventTarget {
     this.speed = startSpeed;
     this.elapsed = 0;
     this.distance = 0;
-    this.spawnTimer = 0.6;
+    this.spawnTimer = 1.2;
     this.running = false;
 
     this._onChordChange = (e) => this._handleChordChange(e.detail);
@@ -83,7 +83,13 @@ export class ChordRacerGame extends EventTarget {
     this.carX += (targetX - this.carX) * Math.min(1, dt * 10);
 
     this.spawnTimer -= dt;
-    const dynamicInterval = Math.max(0.42, 1.15 - this.elapsed * 0.012);
+    // This interval is the actual time a player gets between one obstacle's
+    // lane and the next one's, since every obstacle crosses the track at the
+    // same current speed. It has to stay long enough to switch chords and
+    // settle before the next lane call — too short and a dodge into a lane
+    // gets immediately undone by the next obstacle already needing you out
+    // of it.
+    const dynamicInterval = Math.max(0.85, 1.7 - this.elapsed * 0.01);
     if (this.spawnTimer <= 0) {
       this.spawnTimer = dynamicInterval;
       const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
