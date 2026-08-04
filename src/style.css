@@ -550,6 +550,15 @@ tbody tr:nth-child(3) td:first-child {
   color: var(--text-dim);
 }
 
+.legend-item.active {
+  color: var(--accent-2);
+}
+
+.legend-item.active .small {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
 .game-canvas-wrap {
   position: relative;
   display: flex;

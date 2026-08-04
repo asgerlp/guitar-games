@@ -1,15 +1,22 @@
 const PLAYER_MAX_HP = 100;
 const CPU_MAX_HP = 100;
-const CPU_TELEGRAPH_MS = 700; // how long the CPU "winds up" before an attack lands — your window to block
-const CPU_ATTACK_MIN_INTERVAL = 1.1; // seconds, floor as the fight goes on
-const CPU_ATTACK_MAX_INTERVAL = 2.6;
-const CPU_DAMAGE_MIN = 8;
-const CPU_DAMAGE_MAX = 15;
+const CPU_TELEGRAPH_MS = 650; // how long the CPU "winds up" before an attack lands — your window to block
+const CPU_ATTACK_MIN_INTERVAL = 0.6; // seconds, floor as the fight goes on
+const CPU_ATTACK_MAX_INTERVAL = 1.3;
+const CPU_DAMAGE_MIN = 14;
+const CPU_DAMAGE_MAX = 24;
 
+// Damage-per-cooldown-second is intentionally close across attack/kick/special
+// (~7.7-8 dps each) — they're a tactical choice (fast/small vs slow/big), not
+// a combo to stack. Combined with the shared cooldown below (using any one
+// locks out the others too) and the CPU's own ~14dps unblocked threat, simply
+// ignoring Block and mashing the highest-damage chord is a guaranteed loss —
+// verified via simulation against a frame-perfect "never block" bot before
+// picking these numbers.
 export const ACTION_DEFS = {
-  attack: { label: 'Attack', damage: 12, cooldownSec: 0.5 },
-  kick: { label: 'Kick', damage: 20, cooldownSec: 0.9 },
-  special: { label: 'Special', damage: 32, cooldownSec: 1.8 },
+  attack: { label: 'Attack', damage: 5, cooldownSec: 0.65 },
+  kick: { label: 'Kick', damage: 7, cooldownSec: 0.9 },
+  special: { label: 'Special', damage: 10, cooldownSec: 1.3 },
   block: { label: 'Block', damage: 0, cooldownSec: 0 },
 };
 
@@ -41,7 +48,7 @@ export class ChordFightGame extends EventTarget {
     this.cpuHealth = CPU_MAX_HP;
     this.damageDealt = 0;
     this.currentAction = null;
-    this.cooldownReadyAt = {};
+    this.sharedCooldownReadyAt = 0;
     this.elapsed = 0;
 
     this.cpuState = 'idle'; // 'idle' | 'telegraph'
@@ -91,12 +98,17 @@ export class ChordFightGame extends EventTarget {
   }
 
   _setAction(actionType) {
+    // Require an actual switch to re-trigger — holding/re-strumming the same
+    // chord does nothing, so spamming one chord isn't a viable strategy.
+    if (actionType === this.currentAction) return;
     this.currentAction = actionType;
     if (actionType === 'block') return; // a held stance, not an instant action
     const def = ACTION_DEFS[actionType];
     if (!def) return;
-    if (this.elapsed < (this.cooldownReadyAt[actionType] ?? 0)) return;
-    this.cooldownReadyAt[actionType] = this.elapsed + def.cooldownSec;
+    // One shared cooldown across all attack types — chaining attack, kick,
+    // and special back-to-back doesn't stack damage; each swing is a choice.
+    if (this.elapsed < this.sharedCooldownReadyAt) return;
+    this.sharedCooldownReadyAt = this.elapsed + def.cooldownSec;
     this.cpuHealth = Math.max(0, this.cpuHealth - def.damage);
     this.damageDealt += def.damage;
     this._addFloater(`-${def.damage}`, 'cpu', '#ff5c6c');

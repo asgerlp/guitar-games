@@ -20,6 +20,10 @@ export function renderHome(container, ctx) {
           <h3>🥋 Chord Fight</h3>
           <p>Face off against the CPU. Block its telegraphed attacks and hit back with different chords.</p>
         </button>
+        <button class="game-tile" id="tile-flap">
+          <h3>🐦 Chord Flap</h3>
+          <p>Hold the active chord to rise and dodge pipes — it keeps rotating, so one shape won't carry you.</p>
+        </button>
         <button class="game-tile" id="tile-scores">
           <h3>🏆 High Scores</h3>
           <p>See the top 10 for each game. Land a top-10 run and you'll be asked for your name.</p>
@@ -30,5 +34,6 @@ export function renderHome(container, ctx) {
 
   container.querySelector('#tile-racer').addEventListener('click', () => ctx.navigate('racer'));
   container.querySelector('#tile-fight').addEventListener('click', () => ctx.navigate('fight'));
+  container.querySelector('#tile-flap').addEventListener('click', () => ctx.navigate('flap'));
   container.querySelector('#tile-scores').addEventListener('click', () => ctx.navigate('scores'));
 }
