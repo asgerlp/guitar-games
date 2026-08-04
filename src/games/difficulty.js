@@ -1,13 +1,21 @@
 const STORAGE_KEY = 'guitarGames.racerDifficulty';
 
-// A fresh player starts gentle — slow initial speed, slow ramp — rather than
-// the old fixed 150px/s start, which was too fast for a first-ever run.
-const DEFAULTS = { startSpeed: 90, rampPerSec: 4 };
+// A fresh player starts gentle — slow speed, slow ramp, and generous room
+// between an obstacle appearing and reaching the car (a low carInset keeps
+// the car near the bottom of the track, maximizing that reaction distance).
+const DEFAULTS = { startSpeed: 70, rampPerSec: 2.5, carInset: 80 };
 
-const MIN_START_SPEED = 60;
-const MAX_START_SPEED = 420;
-const MIN_RAMP = 1.5;
-const MAX_RAMP = 22;
+const MIN_START_SPEED = 50;
+const MAX_START_SPEED = 260;
+const MIN_RAMP = 1;
+const MAX_RAMP = 12;
+// carInset = how far the car sits from the bottom of the track. Small means
+// the car is near the bottom, so an obstacle has most of the track's height
+// to travel before reaching it (easy). Large moves the car up toward the
+// obstacles' spawn point, shrinking that reaction distance (hard) without
+// needing to touch speed at all.
+const MIN_CAR_INSET = 60;
+const MAX_CAR_INSET = 420;
 
 // Below this, the run ended almost immediately — back off. This has to
 // clear the game's own "pure luck" noise floor: with 2 lanes and random
@@ -30,7 +38,9 @@ function clamp(value, min, max) {
 function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (raw && Number.isFinite(raw.startSpeed) && Number.isFinite(raw.rampPerSec)) return raw;
+    if (raw && Number.isFinite(raw.startSpeed) && Number.isFinite(raw.rampPerSec) && Number.isFinite(raw.carInset)) {
+      return raw;
+    }
   } catch {
     // fall through to defaults
   }
@@ -42,11 +52,16 @@ function save(state) {
 }
 
 /**
- * Tracks how fast Chord Racer should start and ramp for this player,
- * persisted across sessions in localStorage. Every completed run nudges the
+ * Tracks how Chord Racer should start and ramp for this player, persisted
+ * across sessions in localStorage. Every completed run nudges the
  * difficulty toward a length that's neither a near-instant crash nor a
  * trivial survival, so the game gradually finds — and keeps pace with —
- * the player's actual skill instead of hitting them with a fixed speed.
+ * the player's actual skill instead of hitting them with fixed numbers.
+ *
+ * Getting harder mainly means shortening the reaction-time gap (raising
+ * carInset), not just raising speed — speed still creeps up too, but
+ * gently, since cranking speed alone is what made things feel unfairly
+ * fast rather than genuinely more challenging.
  */
 export class DifficultyModel {
   constructor() {
@@ -57,29 +72,39 @@ export class DifficultyModel {
     return { ...this.state };
   }
 
+  /** Manually override the starting speed, e.g. from a settings control. */
+  setStartSpeed(value) {
+    this.state = { ...this.state, startSpeed: clamp(value, MIN_START_SPEED, MAX_START_SPEED) };
+    save(this.state);
+  }
+
   /** Call once per finished run. Returns 'up' | 'down' | 'same' for feedback. */
   recordRun({ elapsedSeconds }) {
-    let { startSpeed, rampPerSec } = this.state;
+    let { startSpeed, rampPerSec, carInset } = this.state;
 
     if (elapsedSeconds < SHORT_RUN_SECONDS) {
-      startSpeed *= 0.88;
-      rampPerSec *= 0.88;
+      startSpeed *= 0.92;
+      rampPerSec *= 0.92;
+      carInset *= 0.8; // give back a lot of reaction room quickly
     } else if (elapsedSeconds > LONG_RUN_SECONDS) {
-      startSpeed *= 1.12;
-      rampPerSec *= 1.12;
+      startSpeed *= 1.04;
+      rampPerSec *= 1.04;
+      carInset *= 1.15; // shorten the reaction gap — the main "harder" lever
     } else {
-      // A solid, unremarkable run: creep the difficulty up a little so
-      // steady play keeps getting more challenging over time.
-      startSpeed *= 1.03;
-      rampPerSec *= 1.03;
+      // A solid, unremarkable run: creep difficulty up a little so steady
+      // play keeps getting more challenging over time.
+      startSpeed *= 1.01;
+      rampPerSec *= 1.01;
+      carInset *= 1.05;
     }
 
     startSpeed = clamp(startSpeed, MIN_START_SPEED, MAX_START_SPEED);
     rampPerSec = clamp(rampPerSec, MIN_RAMP, MAX_RAMP);
+    carInset = clamp(carInset, MIN_CAR_INSET, MAX_CAR_INSET);
 
-    const direction = startSpeed > this.state.startSpeed ? 'up' : startSpeed < this.state.startSpeed ? 'down' : 'same';
+    const direction = carInset > this.state.carInset ? 'up' : carInset < this.state.carInset ? 'down' : 'same';
 
-    this.state = { startSpeed, rampPerSec };
+    this.state = { startSpeed, rampPerSec, carInset };
     save(this.state);
     return direction;
   }

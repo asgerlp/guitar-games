@@ -32,12 +32,21 @@ this environment.*
    steers a car into whichever lane's assigned chord you're currently
    holding.
 
-Chord Racer's speed is adaptive rather than fixed (`src/games/difficulty.js`):
-it starts gentle, and after every run backs off if you crashed almost
-immediately, pushes up if you comfortably survived, or nudges up slightly
-otherwise — so it settles near your actual skill level instead of hitting a
-beginner with the same speed as an expert. This is stored per-browser in
-localStorage and can be reset from the Chord Racer setup screen.
+Chord Racer's difficulty is adaptive rather than fixed (`src/games/difficulty.js`):
+it starts slow with generous reaction room, and after every run backs off
+(more room to react) if you crashed almost immediately, tightens (less room)
+if you comfortably survived, or nudges slightly otherwise — so it settles
+near your actual skill level instead of hitting a beginner with the same
+pace as an expert. Reaction room — how far the car sits from the bottom of
+the track, which controls how long an obstacle takes to reach it — is the
+main difficulty lever, not raw speed, since cranking speed alone made things
+feel unfair rather than genuinely harder. The "crashed almost immediately"
+cutoff (18s) is calibrated against a simulation of a player who reacts to
+literally nothing — with 2 lanes and random obstacle placement, pure luck
+alone produces a median ~7s survival, so the threshold has to clear that
+noise floor or it ends up rewarding luck as if it were skill. Start speed
+can also be set manually from the Chord Racer setup screen; the whole model
+is stored per-browser in localStorage and can be reset there too.
 
 ## Running it
 

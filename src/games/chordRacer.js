@@ -6,7 +6,10 @@ const OBSTACLE_TYPES = ['tree', 'rock', 'banana', 'barrel'];
 
 /** Canvas-driven "dodge obstacles by switching lanes/chords" game. */
 export class ChordRacerGame extends EventTarget {
-  constructor(canvas, { laneChordIds, detector, keyboardFallback = false, startSpeed = 90, rampPerSec = 4 }) {
+  constructor(
+    canvas,
+    { laneChordIds, detector, keyboardFallback = false, startSpeed = 70, rampPerSec = 2.5, carInset = 80 }
+  ) {
     super();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -16,6 +19,7 @@ export class ChordRacerGame extends EventTarget {
     this.keyboardFallback = keyboardFallback;
     this.startSpeed = startSpeed;
     this.rampPerSec = rampPerSec;
+    this.carInset = carInset;
 
     this.currentLaneIndex = Math.floor(this.laneCount / 2);
     this.carX = this._laneCenterX(this.currentLaneIndex);
@@ -89,7 +93,7 @@ export class ChordRacerGame extends EventTarget {
     for (const ob of this.obstacles) ob.y += this.speed * dt;
     this.obstacles = this.obstacles.filter((ob) => ob.y < this.canvas.height + 60);
 
-    const carY = this.canvas.height - 90;
+    const carY = this.canvas.height - this.carInset;
     for (const ob of this.obstacles) {
       const obX = this._laneCenterX(ob.lane);
       const hitX = Math.abs(obX - this.carX) < CAR_HALF_WIDTH + OBSTACLE_HALF_WIDTH - 16;
@@ -135,7 +139,7 @@ export class ChordRacerGame extends EventTarget {
       this._drawObstacle(x, ob.y, ob.type, OBSTACLE_HALF_WIDTH * 2, 40);
     }
 
-    const carY = canvas.height - 90;
+    const carY = canvas.height - this.carInset;
     this._drawCar(this.carX, carY, CAR_HALF_WIDTH * 2, 44, {
       body: '#5ad1a8',
       cabin: '#0f3226',
