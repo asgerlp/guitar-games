@@ -194,7 +194,7 @@ export class ChordFightGame extends EventTarget {
     });
 
     ctx.textAlign = 'center';
-    ctx.font = 'bold 16px sans-serif';
+    ctx.font = 'bold 16px monospace';
     for (const f of this.floaters) {
       const x = f.side === 'player' ? playerX : cpuX;
       const y = groundY - 130 - (1 - f.life) * 40;
@@ -218,7 +218,7 @@ export class ChordFightGame extends EventTarget {
     ctx.lineWidth = 1;
     ctx.strokeRect(x, y, width, h);
     ctx.fillStyle = '#eef1f8';
-    ctx.font = '12px sans-serif';
+    ctx.font = '12px monospace';
     ctx.fillText(`${label} ${Math.max(0, Math.round(health))}`, x, y - 4);
   }
 

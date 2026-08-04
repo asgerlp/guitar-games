@@ -177,7 +177,7 @@ export function renderFight(container, ctx) {
     const win = result === 'win';
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2>${win ? 'You Win!' : 'Knocked Out'}</h2>
+        <h2 class="${win ? 'win' : 'lose'}">${win ? 'You Win!' : 'Knocked Out'}</h2>
         <div class="score">${win ? '🥋' : '💥'}</div>
         <p class="hint">
           ${win ? 'Nice reflexes — block on time and hit back cleanly for a rematch.' : 'The CPU got the better of you this time. Watch for the wind-up and block it.'}
