@@ -2,6 +2,7 @@ import { ChordRacerGame } from '../games/chordRacer.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { DifficultyModel } from '../games/difficulty.js';
 import { loadJSON, saveJSON } from '../lib/storage.js';
+import { renderHighScoreSection } from '../lib/highScores.js';
 
 const LANE_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.racerSetup';
@@ -247,12 +248,14 @@ export function renderRacer(container, ctx) {
         <h2>Game Over</h2>
         <div class="score">${score}</div>
         <p class="hint">${feedback}</p>
-        <div class="row" style="justify-content:center">
+        <div id="hs-host"></div>
+        <div class="row" style="justify-content:center; margin-top:1rem">
           <button class="btn primary" id="retry-btn">Play again</button>
           <button class="btn" id="setup-btn">Change settings</button>
         </div>
       </div>
     `;
+    renderHighScoreSection(container.querySelector('#hs-host'), 'racer', score);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

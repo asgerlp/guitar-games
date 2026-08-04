@@ -39,6 +39,7 @@ export class ChordFightGame extends EventTarget {
 
     this.playerHealth = PLAYER_MAX_HP;
     this.cpuHealth = CPU_MAX_HP;
+    this.damageDealt = 0;
     this.currentAction = null;
     this.cooldownReadyAt = {};
     this.elapsed = 0;
@@ -97,6 +98,7 @@ export class ChordFightGame extends EventTarget {
     if (this.elapsed < (this.cooldownReadyAt[actionType] ?? 0)) return;
     this.cooldownReadyAt[actionType] = this.elapsed + def.cooldownSec;
     this.cpuHealth = Math.max(0, this.cpuHealth - def.damage);
+    this.damageDealt += def.damage;
     this._addFloater(`-${def.damage}`, 'cpu', '#ff5c6c');
     if (this.cpuHealth <= 0) this._endGame('win');
   }
@@ -153,7 +155,11 @@ export class ChordFightGame extends EventTarget {
 
   _endGame(result) {
     this.stop();
-    this.dispatchEvent(new CustomEvent('gameover', { detail: { result, elapsedSeconds: this.elapsed } }));
+    this.dispatchEvent(
+      new CustomEvent('gameover', {
+        detail: { result, elapsedSeconds: this.elapsed, score: Math.round(this.damageDealt) },
+      })
+    );
   }
 
   _draw() {
