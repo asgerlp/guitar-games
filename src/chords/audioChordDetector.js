@@ -1,8 +1,8 @@
 import { cosineSimilarity, notesToChromaTemplate } from './chromaUtils.js';
 
 const SMOOTHING = 0.35; // EMA factor applied to each incoming chroma frame
-const MATCH_THRESHOLD = 0.7; // cosine similarity needed to accept a match
-const SILENCE_DB = -75; // peak dB below this reads as "not playing" (analyser floor is -100)
+export const MATCH_THRESHOLD = 0.7; // cosine similarity needed to accept a match
+export const SILENCE_DB = -75; // peak dB below this reads as "not playing" (analyser floor is -100)
 const HOLD_MS = 220; // a candidate match must stay stable this long before firing
 
 /**
