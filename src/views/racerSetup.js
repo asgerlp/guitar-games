@@ -1,16 +1,19 @@
 import { ChordRacerGame } from '../games/chordRacer.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { DifficultyModel } from '../games/difficulty.js';
+import { loadJSON, saveJSON } from '../lib/storage.js';
 
 const LANE_COUNT_DEFAULT = 2;
+const SETTINGS_KEY = 'guitarGames.racerSetup';
 
 export function renderRacer(container, ctx) {
   const { store, audio, detector } = ctx;
   const difficulty = new DifficultyModel();
+  const saved = loadJSON(SETTINGS_KEY, {});
 
-  let laneCount = LANE_COUNT_DEFAULT;
+  let laneCount = saved.laneCount ?? LANE_COUNT_DEFAULT;
   let laneChordIds = [];
-  let keyboardFallback = false;
+  let keyboardFallback = saved.keyboardFallback ?? false;
   let game = null;
 
   function defaultLaneAssignment(count) {
@@ -22,7 +25,20 @@ export function renderRacer(container, ctx) {
     return ids;
   }
 
-  laneChordIds = defaultLaneAssignment(laneCount);
+  function persistSettings() {
+    saveJSON(SETTINGS_KEY, { laneCount, laneChordIds, keyboardFallback });
+  }
+
+  // Restore the saved lane assignment only if it still lines up with what's
+  // currently enabled — a chord getting disabled/deleted since last time
+  // shouldn't leave a lane silently pointing at nothing.
+  const enabledIds = new Set(store.enabled().map((c) => c.id));
+  laneChordIds =
+    Array.isArray(saved.laneChordIds) &&
+    saved.laneChordIds.length === laneCount &&
+    saved.laneChordIds.every((id) => enabledIds.has(id))
+      ? saved.laneChordIds
+      : defaultLaneAssignment(laneCount);
 
   function renderSetup() {
     const enabled = store.enabled();
@@ -114,17 +130,20 @@ export function renderRacer(container, ctx) {
         const i = Number(sel.dataset.lane);
         laneChordIds[i] = sel.value;
         renderLaneDiagram(i);
+        persistSettings();
       });
     });
 
     container.querySelector('#lane-count').addEventListener('change', (e) => {
       laneCount = Number(e.target.value);
       laneChordIds = defaultLaneAssignment(laneCount);
+      persistSettings();
       renderSetup();
     });
 
     container.querySelector('#kb-fallback').addEventListener('change', (e) => {
       keyboardFallback = e.target.checked;
+      persistSettings();
     });
 
     container.querySelector('#reset-difficulty-btn').addEventListener('click', () => {
