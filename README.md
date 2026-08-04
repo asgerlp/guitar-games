@@ -5,6 +5,12 @@ read via a Roland GP-50 (or any other MIDI source) over the **Web MIDI API**
 — no microphone/pitch-detection involved, so recognition is as accurate as
 your gear's own note tracking.
 
+![Chord Racer gameplay: a car dodging obstacles across two lanes, one per chord](docs/screenshot-chord-racer.png)
+
+*Chord Racer mid-run — car (green) steers into whichever lane's chord is currently
+held, dodging obstacles (red) as speed ramps up. Captured using the keyboard
+fallback since no physical GP-50 was available in this environment.*
+
 ## How it works
 
 1. Connect your GP-50 (with a GK-equipped guitar/pickup) to your Mac via a
