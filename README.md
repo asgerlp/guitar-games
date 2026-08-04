@@ -8,8 +8,8 @@ your gear's own note tracking.
 ![Chord Racer gameplay: a car dodging obstacles across two lanes, one per chord](docs/screenshot-chord-racer.png)
 
 *Chord Racer mid-run — car (green) steers into whichever lane's chord is currently
-held, dodging obstacles (red) as speed ramps up. Captured using the keyboard
-fallback since no physical GP-50 was available in this environment.*
+held, dodging trees, rocks, bananas, and barrels as speed ramps up. Captured using
+the keyboard fallback since no physical GP-50 was available in this environment.*
 
 ## How it works
 

@@ -4,6 +4,7 @@ const RAMP_PER_SEC = 7; // px/s gained per second survived
 const CAR_HALF_WIDTH = 26;
 const OBSTACLE_HALF_WIDTH = 30;
 const HIT_HALF_HEIGHT = 28;
+const OBSTACLE_TYPES = ['tree', 'rock', 'banana', 'barrel'];
 
 /** Canvas-driven "dodge obstacles by switching lanes/chords" game. */
 export class ChordRacerGame extends EventTarget {
@@ -81,7 +82,8 @@ export class ChordRacerGame extends EventTarget {
     const dynamicInterval = Math.max(0.42, 1.15 - this.elapsed * 0.012);
     if (this.spawnTimer <= 0) {
       this.spawnTimer = dynamicInterval;
-      this.obstacles.push({ lane: Math.floor(Math.random() * this.laneCount), y: -40 });
+      const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+      this.obstacles.push({ lane: Math.floor(Math.random() * this.laneCount), y: -40, type });
     }
 
     for (const ob of this.obstacles) ob.y += this.speed * dt;
@@ -126,11 +128,7 @@ export class ChordRacerGame extends EventTarget {
 
     for (const ob of this.obstacles) {
       const x = this._laneCenterX(ob.lane);
-      this._drawCar(x, ob.y, OBSTACLE_HALF_WIDTH * 2, 40, {
-        body: '#ff5c6c',
-        cabin: '#5c1620',
-        facing: 'down',
-      });
+      this._drawObstacle(x, ob.y, ob.type, OBSTACLE_HALF_WIDTH * 2, 40);
     }
 
     const carY = canvas.height - 90;
@@ -189,6 +187,145 @@ export class ChordRacerGame extends EventTarget {
     const lightY = noseUp ? -halfH + 2 : halfH - 6;
     ctx.fillRect(-halfW + 4, lightY, 7, 4);
     ctx.fillRect(halfW - 11, lightY, 7, 4);
+
+    ctx.restore();
+  }
+
+  /** Dispatch to the sprite for a road-hazard obstacle type. */
+  _drawObstacle(cx, cy, type, width, height) {
+    switch (type) {
+      case 'tree':
+        return this._drawTree(cx, cy, width, height);
+      case 'rock':
+        return this._drawRock(cx, cy, width, height);
+      case 'banana':
+        return this._drawBanana(cx, cy, width, height);
+      case 'barrel':
+      default:
+        return this._drawBarrel(cx, cy, width, height);
+    }
+  }
+
+  _drawTree(cx, cy, width, height) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    ctx.fillStyle = '#6b4a2a';
+    ctx.fillRect(-4, height * 0.18, 8, height * 0.28);
+
+    const r = width * 0.32;
+    ctx.fillStyle = '#2e6b3e';
+    ctx.beginPath();
+    ctx.arc(0, -height * 0.08, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-r * 0.7, height * 0.05, r * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(r * 0.7, height * 0.05, r * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#3f8a52';
+    ctx.beginPath();
+    ctx.arc(-r * 0.25, -r * 0.35, r * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  _drawRock(cx, cy, width, height) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    ctx.fillStyle = '#8b8f9c';
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.34, height * 0.1);
+    ctx.lineTo(-width * 0.4, -height * 0.15);
+    ctx.lineTo(-width * 0.08, -height * 0.35);
+    ctx.lineTo(width * 0.28, -height * 0.28);
+    ctx.lineTo(width * 0.38, height * 0.02);
+    ctx.lineTo(width * 0.26, height * 0.32);
+    ctx.lineTo(-width * 0.15, height * 0.34);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#686c79';
+    ctx.beginPath();
+    ctx.moveTo(width * 0.02, height * 0.3);
+    ctx.lineTo(width * 0.26, height * 0.32);
+    ctx.lineTo(width * 0.38, height * 0.02);
+    ctx.lineTo(width * 0.12, -height * 0.02);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+    ctx.beginPath();
+    ctx.ellipse(-width * 0.12, -height * 0.14, width * 0.14, height * 0.08, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  _drawBanana(cx, cy, width, height) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-0.35);
+
+    ctx.fillStyle = '#f5d13d';
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.32, height * 0.22);
+    ctx.quadraticCurveTo(-width * 0.05, -height * 0.42, width * 0.32, -height * 0.16);
+    ctx.quadraticCurveTo(width * 0.02, -height * 0.12, -width * 0.2, height * 0.3);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#c9a52a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.26, height * 0.2);
+    ctx.quadraticCurveTo(-width * 0.02, -height * 0.32, width * 0.27, -height * 0.15);
+    ctx.stroke();
+
+    ctx.fillStyle = '#6b4a1f';
+    ctx.beginPath();
+    ctx.arc(-width * 0.3, height * 0.22, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(width * 0.32, -height * 0.16, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  _drawBarrel(cx, cy, width, height) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(cx, cy);
+
+    const r = Math.min(width, height) * 0.42;
+    ctx.fillStyle = '#c9622c';
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#7a3a16';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.68, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.98, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.3, -r * 0.3, r * 0.3, r * 0.18, -0.5, 0, Math.PI * 2);
+    ctx.fill();
 
     ctx.restore();
   }
