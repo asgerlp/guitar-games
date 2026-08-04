@@ -37,10 +37,20 @@ recognized, then play **Chord Racer**.
 ## Customizing chords
 
 The default library (`src/chords/defaultChords.js`) assumes standard tuning
-and open-position voicings with no transpose on the GP-50. If your setup
-reports different absolute MIDI pitches, use **Chord Library → Re-record**
-(or **Add a new chord**) to capture the exact notes your gear sends for a
-given shape — the app matches on whatever you record, not on music theory.
+and open-position voicings with no transpose on the GP-50, using standard
+shorthand names (`E`, `Em`, `F#m`, ...) rather than spelling out
+major/minor/sharp. If your setup reports different absolute MIDI pitches,
+use **Chord Library → Re-record** (or **Add a new chord**) to capture the
+exact notes your gear sends for a given shape — the app matches on whatever
+you record, not on music theory.
+
+Each default chord also carries a fretboard shape (`frets` in
+`defaultChords.js`), rendered as a small "how to play" diagram
+(`src/chords/chordDiagram.js`) in the Chord Library, the Chord Racer lane
+picker, and as a live legend while playing. Custom chords recorded purely
+from MIDI notes don't have a known fingering, so they show "no diagram"
+instead — re-recording a default chord keeps its diagram, since only the
+notes change, not the shape.
 
 No physical GP-50 was available while building this, so the MIDI plumbing is
 implemented directly against the Web MIDI API spec and covered by the fake

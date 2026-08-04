@@ -59,14 +59,17 @@ export class ChordStore extends EventTarget {
     this._emitChange();
   }
 
-  upsert({ id, name, notes, source = 'custom' }) {
+  upsert({ id, name, notes, source = 'custom', frets }) {
     const existing = this.chords.find((c) => c.id === id);
     if (existing) {
       existing.name = name;
       existing.notes = notes;
       existing.source = existing.source === 'builtin' ? 'builtin' : source;
+      // Re-recording only replaces the captured notes; keep the known
+      // fretboard shape (if any) unless a new one was explicitly given.
+      existing.frets = frets ?? existing.frets;
     } else {
-      this.chords.push({ id, name, notes, source });
+      this.chords.push({ id, name, notes, source, ...(frets ? { frets } : {}) });
       this.enabledIds.add(id);
       localStorage.setItem(ENABLED_KEY, JSON.stringify([...this.enabledIds]));
     }

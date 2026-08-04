@@ -1,4 +1,5 @@
 import { ChordRacerGame } from '../games/chordRacer.js';
+import { renderChordDiagram } from '../chords/chordDiagram.js';
 
 const LANE_COUNT_DEFAULT = 2;
 
@@ -70,14 +71,27 @@ export function renderRacer(container, ctx) {
               .map((c) => `<option value="${c.id}" ${laneChordIds[i] === c.id ? 'selected' : ''}>${c.name}</option>`)
               .join('')}
           </select>
+          <div class="lane-diagram" data-diagram="${i}"></div>
         </div>
       `
       )
       .join('');
 
+    function renderLaneDiagram(i) {
+      const chord = store.get(laneChordIds[i]);
+      const holder = lanePick.querySelector(`[data-diagram="${i}"]`);
+      holder.innerHTML = chord?.frets
+        ? renderChordDiagram(chord.frets)
+        : '<span class="small">no diagram</span>';
+    }
+
+    laneLabels.forEach((_, i) => renderLaneDiagram(i));
+
     lanePick.querySelectorAll('select[data-lane]').forEach((sel) => {
       sel.addEventListener('change', () => {
-        laneChordIds[Number(sel.dataset.lane)] = sel.value;
+        const i = Number(sel.dataset.lane);
+        laneChordIds[i] = sel.value;
+        renderLaneDiagram(i);
       });
     });
 
@@ -97,13 +111,27 @@ export function renderRacer(container, ctx) {
 
   function renderPlaying() {
     const enabled = store.enabled();
-    const laneNames = laneChordIds.map((id) => enabled.find((c) => c.id === id)?.name ?? '?');
+    const laneChords = laneChordIds.map((id) => enabled.find((c) => c.id === id));
+    const laneLabels =
+      laneCount === 2 ? ['Left', 'Right'] : Array.from({ length: laneCount }, (_, i) => `Lane ${i + 1}`);
 
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
           <span>Score: <strong id="hud-score">0</strong></span>
-          <span>Lanes: <strong>${laneNames.join(' / ')}</strong></span>
+          <span>Lanes: <strong>${laneChords.map((c) => c?.name ?? '?').join(' / ')}</strong></span>
+        </div>
+        <div class="lane-legend">
+          ${laneLabels
+            .map(
+              (label, i) => `
+              <div class="legend-item">
+                <span class="small">${label}: ${laneChords[i]?.name ?? '?'}</span>
+                ${laneChords[i]?.frets ? renderChordDiagram(laneChords[i].frets, { width: 48, height: 62 }) : ''}
+              </div>
+            `
+            )
+            .join('')}
         </div>
         <canvas id="racer-canvas" width="480" height="640"></canvas>
         <button class="btn" id="quit-btn">Quit to setup</button>

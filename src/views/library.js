@@ -1,4 +1,5 @@
 import { formatNoteSet, midiToName } from '../chords/noteUtils.js';
+import { renderChordDiagram } from '../chords/chordDiagram.js';
 
 export function renderLibrary(container, ctx) {
   const { store, midi, detector } = ctx;
@@ -14,7 +15,7 @@ export function renderLibrary(container, ctx) {
       </p>
       <table>
         <thead>
-          <tr><th>Enabled</th><th>Name</th><th>Notes</th><th>Source</th><th></th></tr>
+          <tr><th>Enabled</th><th>Name</th><th>How to play</th><th>Notes</th><th>Source</th><th></th></tr>
         </thead>
         <tbody id="chord-rows"></tbody>
       </table>
@@ -73,7 +74,7 @@ export function renderLibrary(container, ctx) {
         <h2>Add a new chord</h2>
         <p class="hint">Give it a name, strum and hold the chord on your guitar, then capture it.</p>
         <div class="row">
-          <input type="text" id="new-chord-name" placeholder="e.g. F major" />
+          <input type="text" id="new-chord-name" placeholder="e.g. F#m" />
           <button class="btn primary" id="start-add">Start recording</button>
         </div>
       `;
@@ -112,6 +113,7 @@ export function renderLibrary(container, ctx) {
             <input type="checkbox" data-toggle="${c.id}" ${store.isEnabled(c.id) ? 'checked' : ''} />
           </td>
           <td>${c.name}</td>
+          <td>${c.frets ? renderChordDiagram(c.frets) : '<span class="small">no diagram</span>'}</td>
           <td class="small">${formatNoteSet(c.notes)}</td>
           <td class="small">${c.source}</td>
           <td class="row">
