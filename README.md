@@ -48,6 +48,24 @@ noise floor or it ends up rewarding luck as if it were skill. Start speed
 can also be set manually from the Chord Racer setup screen; the whole model
 is stored per-browser in localStorage and can be reset there too.
 
+## Games
+
+- **Chord Racer** (`src/games/chordRacer.js`) — steer a car between 2-4 lanes
+  by switching chords, dodging obstacles that fall faster the longer you
+  survive. See "Adaptive difficulty" above.
+- **Chord Fight** (`src/games/chordFight.js`) — a stick-figure fight against
+  a CPU opponent. It briefly telegraphs (winds up) before every attack; hold
+  whichever chord you've assigned to **Block** during that window to negate
+  it. Playing an attack-type chord (Attack/Kick/Special, depending on how
+  many chords you assign — 2 to 4, same pattern as Racer's lanes) deals
+  damage, each on its own short cooldown, so switching between chords is
+  what actually wins fights rather than spamming one.
+
+Both games only depend on a generic `chordchange` event
+(`ctx.detector`/`AudioChordDetector`) — neither knows or cares that the
+input is audio-based specifically, so a future input source would work with
+zero game-side changes.
+
 ## Running it
 
 ```sh
@@ -125,3 +143,23 @@ tuning is still worth doing on your end:
 - `HOLD_MS` is how long a candidate match must stay stable before it fires,
   as a debounce against strum noise — raise it if chords flicker between
   candidates, lower it for snappier response.
+
+## What persists across sessions
+
+Everything below is saved to the browser's localStorage (`src/lib/storage.js`
+for the generic JSON helpers), so closing the tab or reloading never loses
+your setup:
+
+- The chord library, including calibrated `chroma`/`frets` data and which
+  chords are enabled (`src/chords/chordStore.js`)
+- The last-selected audio input device, for a quicker reconnect next time
+  (`src/audio/audioInputManager.js`)
+- Chord Racer's difficulty model — start speed, ramp, reaction room
+  (`src/games/difficulty.js`) — and its lane count/chord assignment/keyboard
+  fallback preference (`src/views/racerSetup.js`)
+- Chord Fight's chord-count/action assignment/keyboard fallback preference
+  (`src/views/fightSetup.js`)
+
+It's all per-browser (not synced across devices) and namespaced under
+`guitarGames.*` keys — clearing site data resets everything back to
+defaults.

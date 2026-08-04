@@ -16,9 +16,14 @@ export function renderHome(container, ctx) {
           <h3>🏎️ Chord Racer</h3>
           <p>Steer between lanes by switching chords. Dodge obstacles. Speed ramps up over time.</p>
         </button>
+        <button class="game-tile" id="tile-fight">
+          <h3>🥋 Chord Fight</h3>
+          <p>Face off against the CPU. Block its telegraphed attacks and hit back with different chords.</p>
+        </button>
       </div>
     </div>
   `;
 
   container.querySelector('#tile-racer').addEventListener('click', () => ctx.navigate('racer'));
+  container.querySelector('#tile-fight').addEventListener('click', () => ctx.navigate('fight'));
 }
