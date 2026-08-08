@@ -663,3 +663,34 @@ canvas {
   font-size: 0.95rem;
   color: var(--text-dim);
 }
+
+.wizard-step {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.wizard-dots {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.wizard-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 2px solid var(--border);
+}
+
+.wizard-dot.active {
+  background: var(--accent-3);
+  border-color: var(--accent-3);
+  box-shadow: 0 0 8px var(--accent-3-glow);
+}
+
+.wizard-dot.done {
+  background: var(--accent);
+  border-color: var(--accent);
+}
