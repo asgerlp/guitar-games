@@ -1,3 +1,5 @@
+import { DEFAULT_LEVEL, levelT, lerp } from './difficultyLevels.js';
+
 const STORAGE_KEY = 'guitarGames.racerDifficulty';
 
 // A fresh player starts gentle — slow speed, slow ramp, generous room
@@ -5,7 +7,7 @@ const STORAGE_KEY = 'guitarGames.racerDifficulty';
 // the car near the bottom of the track, maximizing that reaction distance),
 // and a wide gap between obstacles so a lane switch never gets undone by
 // the next obstacle arriving right on top of it.
-const DEFAULTS = { startSpeed: 70, rampPerSec: 2.5, carInset: 80, obstacleGapSec: 1.6 };
+const DEFAULTS = { startSpeed: 70, rampPerSec: 2.5, carInset: 80, obstacleGapSec: 1.6, level: DEFAULT_LEVEL };
 
 const MIN_START_SPEED = 50;
 const MAX_START_SPEED = 260;
@@ -49,7 +51,7 @@ function load() {
   try {
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (raw && Number.isFinite(raw.startSpeed) && Number.isFinite(raw.rampPerSec) && Number.isFinite(raw.carInset)) {
-      return { obstacleGapSec: DEFAULTS.obstacleGapSec, ...raw };
+      return { obstacleGapSec: DEFAULTS.obstacleGapSec, level: DEFAULTS.level, ...raw };
     }
   } catch {
     // fall through to defaults
@@ -91,6 +93,24 @@ export class DifficultyModel {
   /** Manually override the gap between obstacles, e.g. from a settings control. */
   setObstacleGap(value) {
     this.state = { ...this.state, obstacleGapSec: clamp(value, MIN_OBSTACLE_GAP_SEC, MAX_OBSTACLE_GAP_SEC) };
+    save(this.state);
+  }
+
+  /**
+   * Jump straight to one of the 6 preset difficulty tiers — a fast, opinionated
+   * way to set all 4 parameters at once. The per-run adaptive nudging in
+   * recordRun() still applies afterward, so this sets where you start, not a
+   * hard ceiling/floor.
+   */
+  applyLevel(level) {
+    const t = levelT(level);
+    this.state = {
+      startSpeed: clamp(lerp(55, 170, t), MIN_START_SPEED, MAX_START_SPEED),
+      rampPerSec: clamp(lerp(1, 6, t), MIN_RAMP, MAX_RAMP),
+      carInset: clamp(lerp(70, 260, t), MIN_CAR_INSET, MAX_CAR_INSET),
+      obstacleGapSec: clamp(lerp(2.4, 0.9, t), MIN_OBSTACLE_GAP_SEC, MAX_OBSTACLE_GAP_SEC),
+      level,
+    };
     save(this.state);
   }
 
