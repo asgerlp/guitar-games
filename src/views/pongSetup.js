@@ -177,7 +177,7 @@ export function renderPong(container, ctx) {
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'pong', score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'pong', level, score);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

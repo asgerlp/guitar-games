@@ -213,7 +213,7 @@ export function renderFight(container, ctx) {
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'fight', score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'fight', level, score);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

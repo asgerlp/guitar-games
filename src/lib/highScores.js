@@ -1,4 +1,5 @@
 import { loadJSON, saveJSON } from './storage.js';
+import { DEFAULT_LEVEL, levelLabel } from '../games/difficultyLevels.js';
 
 const STORAGE_KEY = 'guitarGames.highScores';
 const MAX_ENTRIES = 10;
@@ -20,28 +21,50 @@ function saveAll(all) {
   saveJSON(STORAGE_KEY, all);
 }
 
-/** Top scores for a game, highest first (at most 10). */
-export function getHighScores(gameId) {
-  const all = loadAll();
-  return Array.isArray(all[gameId]) ? all[gameId] : [];
+// Scores are tracked per difficulty level, since a big score on Super Easy
+// and a modest one on Insane aren't really comparable achievements. Entries
+// saved before levels existed (a flat array per game, not grouped by level)
+// get folded into the default level bucket the first time they're read,
+// rather than silently discarded.
+function levelBuckets(raw) {
+  if (Array.isArray(raw)) return { [DEFAULT_LEVEL]: raw };
+  return raw && typeof raw === 'object' ? raw : {};
 }
 
-/** Whether `score` would land in the top-10 list for this game. */
-export function qualifiesForHighScore(gameId, score) {
+/** Top scores for a game at a specific level, highest first (at most 10). */
+export function getHighScores(gameId, level) {
+  const all = loadAll();
+  const buckets = levelBuckets(all[gameId]);
+  return Array.isArray(buckets[level]) ? buckets[level] : [];
+}
+
+/** Which levels have at least one recorded score for this game, ascending. */
+export function levelsWithScores(gameId) {
+  const all = loadAll();
+  const buckets = levelBuckets(all[gameId]);
+  return Object.keys(buckets)
+    .map(Number)
+    .filter((level) => buckets[level]?.length > 0)
+    .sort((a, b) => a - b);
+}
+
+/** Whether `score` would land in the top-10 for this game at this level. */
+export function qualifiesForHighScore(gameId, level, score) {
   if (!(score > 0)) return false;
-  const scores = getHighScores(gameId);
+  const scores = getHighScores(gameId, level);
   return scores.length < MAX_ENTRIES || score > scores[scores.length - 1].score;
 }
 
-/** Record a new score, keeping only the top 10, sorted highest first. */
-export function addHighScore(gameId, name, score) {
+/** Record a new score at this level, keeping only the top 10, sorted highest first. */
+export function addHighScore(gameId, level, name, score) {
   const all = loadAll();
-  const scores = getHighScores(gameId);
+  const buckets = levelBuckets(all[gameId]);
   const entry = { name: name.trim().slice(0, 20) || 'Anonymous', score, date: new Date().toISOString() };
-  const next = [...scores, entry].sort((a, b) => b.score - a.score).slice(0, MAX_ENTRIES);
-  all[gameId] = next;
+  const scores = Array.isArray(buckets[level]) ? buckets[level] : [];
+  buckets[level] = [...scores, entry].sort((a, b) => b.score - a.score).slice(0, MAX_ENTRIES);
+  all[gameId] = buckets;
   saveAll(all);
-  return next;
+  return buckets[level];
 }
 
 function escapeHtml(str) {
@@ -67,28 +90,29 @@ export function highScoreTableHTML(entries) {
 
 /**
  * Wires up a self-contained "new high score" name-entry widget inside
- * `hostEl`. If `score` doesn't qualify for the top 10, leaves it empty.
- * After saving, swaps to a confirmation plus the updated leaderboard.
+ * `hostEl`, scoped to the level the run was just played at. If `score`
+ * doesn't qualify for that level's top 10, leaves it empty. After saving,
+ * swaps to a confirmation plus that level's updated leaderboard.
  */
-export function renderHighScoreSection(hostEl, gameId, score) {
+export function renderHighScoreSection(hostEl, gameId, level, score) {
   let saved = false;
 
   function paint() {
     if (saved) {
       hostEl.innerHTML = `
-        <p class="hint">Saved to the leaderboard!</p>
-        ${highScoreTableHTML(getHighScores(gameId))}
+        <p class="hint">Saved to the ${levelLabel(level)} leaderboard!</p>
+        ${highScoreTableHTML(getHighScores(gameId, level))}
       `;
       return;
     }
 
-    if (!qualifiesForHighScore(gameId, score)) {
+    if (!qualifiesForHighScore(gameId, level, score)) {
       hostEl.innerHTML = '';
       return;
     }
 
     hostEl.innerHTML = `
-      <p class="hint">🏆 New high score! Enter your name for the leaderboard:</p>
+      <p class="hint">🏆 New ${levelLabel(level)} high score! Enter your name for the leaderboard:</p>
       <div class="row" style="justify-content:center">
         <input type="text" id="hs-name" maxlength="20" placeholder="Your name" />
         <button class="btn primary" id="hs-save">Save</button>
@@ -97,7 +121,7 @@ export function renderHighScoreSection(hostEl, gameId, score) {
 
     const nameInput = hostEl.querySelector('#hs-name');
     const submit = () => {
-      addHighScore(gameId, nameInput.value, score);
+      addHighScore(gameId, level, nameInput.value, score);
       saved = true;
       paint();
     };
