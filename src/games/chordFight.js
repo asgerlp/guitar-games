@@ -1,10 +1,14 @@
+import { levelT, lerp } from './difficultyLevels.js';
+
 const PLAYER_MAX_HP = 100;
 const CPU_MAX_HP = 100;
-const CPU_TELEGRAPH_MS = 650; // how long the CPU "winds up" before an attack lands — your window to block
-const CPU_ATTACK_MIN_INTERVAL = 0.6; // seconds, floor as the fight goes on
-const CPU_ATTACK_MAX_INTERVAL = 1.3;
-const CPU_DAMAGE_MIN = 14;
-const CPU_DAMAGE_MAX = 24;
+// Defaults match the "Medium" difficulty tier — see difficultyLevels() in
+// fightSetup.js for how the 6-level picker scales these.
+const DEFAULT_CPU_TELEGRAPH_MS = 650; // how long the CPU "winds up" before an attack lands — your window to block
+const DEFAULT_CPU_ATTACK_MIN_INTERVAL = 0.6; // seconds, floor as the fight goes on
+const DEFAULT_CPU_ATTACK_MAX_INTERVAL = 1.3;
+const DEFAULT_CPU_DAMAGE_MIN = 14;
+const DEFAULT_CPU_DAMAGE_MAX = 24;
 
 // Damage-per-cooldown-second is intentionally close across attack/kick/special
 // (~7.7-8 dps each) — they're a tactical choice (fast/small vs slow/big), not
@@ -28,6 +32,22 @@ export function actionTypesForCount(count) {
 }
 
 /**
+ * Maps a 6-tier difficulty level to CPU behavior — only the CPU's side
+ * scales (attack pace, telegraph window, damage); the player's own
+ * cooldowns/damage in ACTION_DEFS stay fixed at every level.
+ */
+export function cpuParamsForLevel(level) {
+  const t = levelT(level);
+  return {
+    cpuTelegraphMs: lerp(1100, 420, t),
+    cpuAttackMinInterval: lerp(1.1, 0.45, t),
+    cpuAttackMaxInterval: lerp(2.4, 0.9, t),
+    cpuDamageMin: lerp(8, 18, t),
+    cpuDamageMax: lerp(14, 30, t),
+  };
+}
+
+/**
  * Canvas stick-figure fight against a CPU opponent. The CPU telegraphs each
  * attack briefly before it lands — hold the chord mapped to "Block" during
  * that window to negate it. Playing an attack-type chord deals damage,
@@ -35,7 +55,20 @@ export function actionTypesForCount(count) {
  * one) is what actually matters, same interaction model as Chord Racer.
  */
 export class ChordFightGame extends EventTarget {
-  constructor(canvas, { actionChordIds, actionTypes, detector, keyboardFallback = false }) {
+  constructor(
+    canvas,
+    {
+      actionChordIds,
+      actionTypes,
+      detector,
+      keyboardFallback = false,
+      cpuTelegraphMs = DEFAULT_CPU_TELEGRAPH_MS,
+      cpuAttackMinInterval = DEFAULT_CPU_ATTACK_MIN_INTERVAL,
+      cpuAttackMaxInterval = DEFAULT_CPU_ATTACK_MAX_INTERVAL,
+      cpuDamageMin = DEFAULT_CPU_DAMAGE_MIN,
+      cpuDamageMax = DEFAULT_CPU_DAMAGE_MAX,
+    }
+  ) {
     super();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -43,6 +76,11 @@ export class ChordFightGame extends EventTarget {
     this.actionTypes = actionTypes;
     this.detector = detector;
     this.keyboardFallback = keyboardFallback;
+    this.cpuTelegraphMs = cpuTelegraphMs;
+    this.cpuAttackMinInterval = cpuAttackMinInterval;
+    this.cpuAttackMaxInterval = cpuAttackMaxInterval;
+    this.cpuDamageMin = cpuDamageMin;
+    this.cpuDamageMax = cpuDamageMax;
 
     this.playerHealth = PLAYER_MAX_HP;
     this.cpuHealth = CPU_MAX_HP;
@@ -79,9 +117,9 @@ export class ChordFightGame extends EventTarget {
   }
 
   _randomCpuInterval() {
-    const shrink = Math.min(CPU_ATTACK_MAX_INTERVAL - CPU_ATTACK_MIN_INTERVAL, this.elapsed * 0.008);
-    const max = Math.max(CPU_ATTACK_MIN_INTERVAL + 0.3, CPU_ATTACK_MAX_INTERVAL - shrink);
-    return this.elapsed + CPU_ATTACK_MIN_INTERVAL + Math.random() * (max - CPU_ATTACK_MIN_INTERVAL);
+    const shrink = Math.min(this.cpuAttackMaxInterval - this.cpuAttackMinInterval, this.elapsed * 0.008);
+    const max = Math.max(this.cpuAttackMinInterval + 0.3, this.cpuAttackMaxInterval - shrink);
+    return this.elapsed + this.cpuAttackMinInterval + Math.random() * (max - this.cpuAttackMinInterval);
   }
 
   _handleChordChange(match) {
@@ -138,11 +176,11 @@ export class ChordFightGame extends EventTarget {
       if (this.elapsed >= this.nextCpuAttackAt) {
         this.cpuState = 'telegraph';
         this.cpuTelegraphElapsed = 0;
-        this.pendingCpuDamage = CPU_DAMAGE_MIN + Math.random() * (CPU_DAMAGE_MAX - CPU_DAMAGE_MIN);
+        this.pendingCpuDamage = this.cpuDamageMin + Math.random() * (this.cpuDamageMax - this.cpuDamageMin);
       }
     } else {
       this.cpuTelegraphElapsed += dt * 1000;
-      if (this.cpuTelegraphElapsed >= CPU_TELEGRAPH_MS) {
+      if (this.cpuTelegraphElapsed >= this.cpuTelegraphMs) {
         this._resolveCpuAttack();
         this.cpuState = 'idle';
         this.nextCpuAttackAt = this._randomCpuInterval();

@@ -7,6 +7,9 @@ export const GAME_LABELS = {
   racer: 'Chord Racer',
   fight: 'Chord Fight',
   flap: 'Chord Flap',
+  pong: 'Chord Pong',
+  run: 'Chord Run',
+  snake: 'Chord Snake',
 };
 
 function loadAll() {

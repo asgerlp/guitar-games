@@ -1,7 +1,9 @@
-import { ChordFightGame, ACTION_DEFS, actionTypesForCount } from '../games/chordFight.js';
+import { ChordFightGame, ACTION_DEFS, actionTypesForCount, cpuParamsForLevel } from '../games/chordFight.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { loadJSON, saveJSON } from '../lib/storage.js';
 import { renderHighScoreSection } from '../lib/highScores.js';
+import { renderLevelPicker } from './levelPicker.js';
+import { DEFAULT_LEVEL } from '../games/difficultyLevels.js';
 
 const ACTION_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.fightSetup';
@@ -13,6 +15,7 @@ export function renderFight(container, ctx) {
   let actionCount = saved.actionCount ?? ACTION_COUNT_DEFAULT;
   let actionChordIds = [];
   let keyboardFallback = saved.keyboardFallback ?? false;
+  let level = saved.level ?? DEFAULT_LEVEL;
   let game = null;
 
   function defaultAssignment(count) {
@@ -25,7 +28,7 @@ export function renderFight(container, ctx) {
   }
 
   function persistSettings() {
-    saveJSON(SETTINGS_KEY, { actionCount, actionChordIds, keyboardFallback });
+    saveJSON(SETTINGS_KEY, { actionCount, actionChordIds, keyboardFallback, level });
   }
 
   const enabledIds = new Set(store.enabled().map((c) => c.id));
@@ -73,6 +76,11 @@ export function renderFight(container, ctx) {
         <div style="margin-top:1.25rem">
           <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
         </div>
+      </div>
+      <div class="card">
+        <h2>Difficulty</h2>
+        <p class="hint">Controls how fast and hard the CPU attacks, and how long its wind-up telegraph gives you to block.</p>
+        <div class="level-picker" id="level-picker"></div>
       </div>
     `;
 
@@ -122,6 +130,15 @@ export function renderFight(container, ctx) {
       persistSettings();
     });
 
+    renderLevelPicker(container.querySelector('#level-picker'), {
+      value: level,
+      onChange: (newLevel) => {
+        level = newLevel;
+        persistSettings();
+        renderSetup();
+      },
+    });
+
     const startBtn = container.querySelector('#start-btn');
     if (startBtn) startBtn.addEventListener('click', renderPlaying);
   }
@@ -158,7 +175,13 @@ export function renderFight(container, ctx) {
     const playerHpEl = container.querySelector('#hud-player-hp');
     const cpuHpEl = container.querySelector('#hud-cpu-hp');
 
-    game = new ChordFightGame(canvas, { actionChordIds, actionTypes, detector, keyboardFallback });
+    game = new ChordFightGame(canvas, {
+      actionChordIds,
+      actionTypes,
+      detector,
+      keyboardFallback,
+      ...cpuParamsForLevel(level),
+    });
     game.addEventListener('tick', (e) => {
       playerHpEl.textContent = Math.round(e.detail.playerHealth);
       cpuHpEl.textContent = Math.round(e.detail.cpuHealth);

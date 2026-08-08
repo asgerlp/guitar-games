@@ -3,6 +3,8 @@ import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { DifficultyModel } from '../games/difficulty.js';
 import { loadJSON, saveJSON } from '../lib/storage.js';
 import { renderHighScoreSection } from '../lib/highScores.js';
+import { renderLevelPicker } from './levelPicker.js';
+import { DEFAULT_LEVEL } from '../games/difficultyLevels.js';
 
 const LANE_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.racerSetup';
@@ -80,11 +82,12 @@ export function renderRacer(container, ctx) {
       <div class="card">
         <h2>Difficulty</h2>
         <p class="hint">
-          Adapts to you automatically: a run that ends almost instantly backs off and gives you
-          more room to react, a run you comfortably survive shortens that room to make you react
-          faster, and everything in between nudges it up gently over time. Speed only creeps up
-          slightly on its own — reaction room is the main thing that changes.
+          Pick a level to jump straight to a preset. From there it still adapts to you
+          automatically: a run that ends almost instantly backs off and gives you more room to
+          react, a run you comfortably survive shortens that room, and everything in between
+          nudges it up gently over time.
         </p>
+        <div class="level-picker" id="level-picker" style="margin-bottom:1rem"></div>
         <div class="row">
           <span class="small">Start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
           <span class="small">Ramp: <strong>${difficulty.get().rampPerSec.toFixed(1)}</strong> px/s²</span>
@@ -151,6 +154,14 @@ export function renderRacer(container, ctx) {
     container.querySelector('#kb-fallback').addEventListener('change', (e) => {
       keyboardFallback = e.target.checked;
       persistSettings();
+    });
+
+    renderLevelPicker(container.querySelector('#level-picker'), {
+      value: difficulty.get().level ?? DEFAULT_LEVEL,
+      onChange: (level) => {
+        difficulty.applyLevel(level);
+        renderSetup();
+      },
     });
 
     container.querySelector('#reset-difficulty-btn').addEventListener('click', () => {

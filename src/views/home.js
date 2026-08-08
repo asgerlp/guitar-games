@@ -24,6 +24,18 @@ export function renderHome(container, ctx) {
           <h3>🐦 Chord Flap</h3>
           <p>Hold the active chord to rise and dodge pipes — it keeps rotating, so one shape won't carry you.</p>
         </button>
+        <button class="game-tile" id="tile-pong">
+          <h3>🏓 Chord Pong</h3>
+          <p>Hold one chord to slide the paddle left, another to slide right — keep the ball in play.</p>
+        </button>
+        <button class="game-tile" id="tile-run">
+          <h3>🏃 Chord Run</h3>
+          <p>Jump logs and duck beams with two chords. Hold jump to keep hopping, hold duck to slide under.</p>
+        </button>
+        <button class="game-tile" id="tile-snake">
+          <h3>🐍 Chord Snake</h3>
+          <p>Four chords steer up/down/left/right. Classic snake — eat food, don't hit yourself or a wall.</p>
+        </button>
         <button class="game-tile" id="tile-scores">
           <h3>🏆 High Scores</h3>
           <p>See the top 10 for each game. Land a top-10 run and you'll be asked for your name.</p>
@@ -35,5 +47,8 @@ export function renderHome(container, ctx) {
   container.querySelector('#tile-racer').addEventListener('click', () => ctx.navigate('racer'));
   container.querySelector('#tile-fight').addEventListener('click', () => ctx.navigate('fight'));
   container.querySelector('#tile-flap').addEventListener('click', () => ctx.navigate('flap'));
+  container.querySelector('#tile-pong').addEventListener('click', () => ctx.navigate('pong'));
+  container.querySelector('#tile-run').addEventListener('click', () => ctx.navigate('run'));
+  container.querySelector('#tile-snake').addEventListener('click', () => ctx.navigate('snake'));
   container.querySelector('#tile-scores').addEventListener('click', () => ctx.navigate('scores'));
 }

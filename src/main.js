@@ -9,6 +9,9 @@ import { renderRacer } from './views/racerSetup.js';
 import { renderFight } from './views/fightSetup.js';
 import { renderHighScores } from './views/highScores.js';
 import { renderFlap } from './views/flapSetup.js';
+import { renderPong } from './views/pongSetup.js';
+import { renderRun } from './views/runSetup.js';
+import { renderSnake } from './views/snakeSetup.js';
 
 const audio = new AudioInputManager();
 const store = new ChordStore();
@@ -27,6 +30,9 @@ const VIEWS = {
   racer: { label: 'Chord Racer', render: renderRacer },
   fight: { label: 'Chord Fight', render: renderFight },
   flap: { label: 'Chord Flap', render: renderFlap },
+  pong: { label: 'Chord Pong', render: renderPong },
+  run: { label: 'Chord Run', render: renderRun },
+  snake: { label: 'Chord Snake', render: renderSnake },
   scores: { label: 'High Scores', render: renderHighScores },
 };
 

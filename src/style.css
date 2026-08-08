@@ -634,6 +634,23 @@ canvas {
   gap: 0.5rem;
 }
 
+.level-picker {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.level-btn {
+  font-size: 0.6rem;
+}
+
+.level-btn.active {
+  background: var(--accent-3);
+  color: #04262e;
+  border-color: #04262e;
+  box-shadow: 0 4px 0 #04262e, 0 0 14px var(--accent-3-glow);
+}
+
 .small {
   font-size: 0.95rem;
   color: var(--text-dim);

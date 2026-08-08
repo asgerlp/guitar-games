@@ -1,3 +1,5 @@
+import { levelT, lerp } from './difficultyLevels.js';
+
 const GRAVITY = 1400; // px/s^2, always pulling the bird down
 const LIFT_ACCEL = 2200; // px/s^2 applied while holding the active chord — nets +800 upward
 // Velocity-proportional drag (air resistance) — without it, a bang-bang
@@ -5,7 +7,8 @@ const LIFT_ACCEL = 2200; // px/s^2 applied while holding the active chord — ne
 // oscillates with growing amplitude and slams into an edge almost
 // immediately, verified via simulation before adding this. Drag caps terminal
 // speed naturally (fall settles near GRAVITY/DRAG, rise near (LIFT-GRAVITY)/DRAG)
-// and damps the oscillation instead.
+// and damps the oscillation instead. Kept fixed across difficulty levels —
+// only pacing (below) scales, not the underlying feel of the controls.
 const DRAG = 8;
 const MAX_FALL_SPEED = 320; // safety clamp, well above the natural drag-limited terminal speed
 const MAX_RISE_SPEED = -260;
@@ -13,14 +16,38 @@ const BIRD_X_FRAC = 0.28;
 const BIRD_RADIUS = 16;
 
 const PIPE_WIDTH = 64;
-const PIPE_GAP = 220;
-const PIPE_SPACING = 260; // horizontal gap between successive pipe pairs
-const START_SPEED = 150; // px/s scroll speed
-const MAX_SPEED = 420;
-const SPEED_RAMP_PER_SEC = 2.5;
 
-const ROTATE_MIN_SEC = 3.5; // how long the active (flap) chord stays the same before rotating
-const ROTATE_MAX_SEC = 6.5;
+// Defaults match the "Medium" difficulty tier — see flapParamsForLevel()
+// for how the 6-level picker scales these. The floor here (level 1) is
+// deliberately gentle: a rotating hold-target that also demands split-second
+// chord switches was too punishing at the old fixed pace to be playable at
+// all for a first-timer.
+const DEFAULT_PIPE_GAP = 230;
+const DEFAULT_PIPE_SPACING = 300; // horizontal gap between successive pipe pairs
+const DEFAULT_START_SPEED = 140; // px/s scroll speed
+const DEFAULT_MAX_SPEED = 340;
+const DEFAULT_SPEED_RAMP_PER_SEC = 1.8;
+const DEFAULT_ROTATE_MIN_SEC = 6; // how long the active (flap) chord stays the same before rotating
+const DEFAULT_ROTATE_MAX_SEC = 9.5;
+
+/**
+ * Maps a 6-tier difficulty level to Chord Flap's pacing. The rotate
+ * interval is the main lever — how long you get to settle into holding one
+ * chord before being forced to switch — since that's what real chord-change
+ * latency on an instrument runs into, not raw scroll speed.
+ */
+export function flapParamsForLevel(level) {
+  const t = levelT(level);
+  return {
+    pipeGap: lerp(300, 175, t),
+    pipeSpacing: lerp(360, 230, t),
+    startSpeed: lerp(105, 210, t),
+    maxSpeed: lerp(250, 480, t),
+    speedRampPerSec: lerp(1.1, 3.6, t),
+    rotateMinSec: lerp(9.5, 3, t),
+    rotateMaxSec: lerp(15, 5, t),
+  };
+}
 
 /**
  * Flappy-Bird-style canvas game: gravity always pulls the bird down, and
@@ -34,13 +61,34 @@ const ROTATE_MAX_SEC = 6.5;
  * so holding one shape forever stops working partway through any run.
  */
 export class ChordFlapGame extends EventTarget {
-  constructor(canvas, { chordIds, detector, keyboardFallback = false }) {
+  constructor(
+    canvas,
+    {
+      chordIds,
+      detector,
+      keyboardFallback = false,
+      pipeGap = DEFAULT_PIPE_GAP,
+      pipeSpacing = DEFAULT_PIPE_SPACING,
+      startSpeed = DEFAULT_START_SPEED,
+      maxSpeed = DEFAULT_MAX_SPEED,
+      speedRampPerSec = DEFAULT_SPEED_RAMP_PER_SEC,
+      rotateMinSec = DEFAULT_ROTATE_MIN_SEC,
+      rotateMaxSec = DEFAULT_ROTATE_MAX_SEC,
+    }
+  ) {
     super();
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.chordIds = chordIds;
     this.detector = detector;
     this.keyboardFallback = keyboardFallback;
+    this.pipeGap = pipeGap;
+    this.pipeSpacing = pipeSpacing;
+    this.startSpeed = startSpeed;
+    this.maxSpeed = maxSpeed;
+    this.speedRampPerSec = speedRampPerSec;
+    this.rotateMinSec = rotateMinSec;
+    this.rotateMaxSec = rotateMaxSec;
 
     this.birdY = canvas.height / 2;
     this.birdVy = 0;
@@ -53,7 +101,7 @@ export class ChordFlapGame extends EventTarget {
 
     this.pipes = [];
     this.nextPipeAt = 0.6;
-    this.speed = START_SPEED;
+    this.speed = startSpeed;
     this.score = 0;
     this.running = false;
 
@@ -84,7 +132,7 @@ export class ChordFlapGame extends EventTarget {
   }
 
   _randomRotateDelay() {
-    return this.elapsed + ROTATE_MIN_SEC + Math.random() * (ROTATE_MAX_SEC - ROTATE_MIN_SEC);
+    return this.elapsed + this.rotateMinSec + Math.random() * (this.rotateMaxSec - this.rotateMinSec);
   }
 
   _handleChordChange(match) {
@@ -127,7 +175,7 @@ export class ChordFlapGame extends EventTarget {
 
   _update(dt) {
     this.elapsed += dt;
-    this.speed = Math.min(MAX_SPEED, START_SPEED + this.elapsed * SPEED_RAMP_PER_SEC);
+    this.speed = Math.min(this.maxSpeed, this.startSpeed + this.elapsed * this.speedRampPerSec);
 
     if (this.elapsed >= this.nextRotateAt) this._rotateActiveChord();
 
@@ -142,9 +190,9 @@ export class ChordFlapGame extends EventTarget {
 
     this.nextPipeAt -= dt;
     if (this.nextPipeAt <= 0) {
-      this.nextPipeAt = PIPE_SPACING / this.speed;
+      this.nextPipeAt = this.pipeSpacing / this.speed;
       const margin = 60;
-      const gapY = margin + Math.random() * (this.canvas.height - margin * 2 - PIPE_GAP);
+      const gapY = margin + Math.random() * (this.canvas.height - margin * 2 - this.pipeGap);
       this.pipes.push({ x: this.canvas.width + PIPE_WIDTH, gapY, passed: false });
     }
 
@@ -158,7 +206,7 @@ export class ChordFlapGame extends EventTarget {
       }
 
       const withinX = birdX + BIRD_RADIUS > pipe.x && birdX - BIRD_RADIUS < pipe.x + PIPE_WIDTH;
-      const withinGap = this.birdY - BIRD_RADIUS > pipe.gapY && this.birdY + BIRD_RADIUS < pipe.gapY + PIPE_GAP;
+      const withinGap = this.birdY - BIRD_RADIUS > pipe.gapY && this.birdY + BIRD_RADIUS < pipe.gapY + this.pipeGap;
       if (withinX && !withinGap) {
         this._gameOver();
         return;
@@ -187,7 +235,7 @@ export class ChordFlapGame extends EventTarget {
       ctx.roundRect(pipe.x, 0, PIPE_WIDTH, pipe.gapY, 6);
       ctx.fill();
       ctx.beginPath();
-      ctx.roundRect(pipe.x, pipe.gapY + PIPE_GAP, PIPE_WIDTH, canvas.height - (pipe.gapY + PIPE_GAP), 6);
+      ctx.roundRect(pipe.x, pipe.gapY + this.pipeGap, PIPE_WIDTH, canvas.height - (pipe.gapY + this.pipeGap), 6);
       ctx.fill();
     }
 
