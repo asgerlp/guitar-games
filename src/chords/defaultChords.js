@@ -1,7 +1,7 @@
 // Absolute MIDI note numbers for common open-position chords in standard
 // tuning (E2 A2 D3 G3 B3 E4). These assume the GP-50 is reporting true
 // pitch (no transpose) from the GK pickup — if your rig reports differently,
-// just re-record each chord from the Chord Library screen and it'll override
+// just re-record each chord from the Chord Library section in Settings and it'll override
 // these numbers with what your gear actually sends (the fretboard shape
 // stays as-is, so the diagram keeps showing how to play it).
 //

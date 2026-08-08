@@ -1,20 +1,36 @@
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { MATCH_THRESHOLD } from '../chords/audioChordDetector.js';
+import { renderLibrary } from './library.js';
 
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-export function renderAudioSetup(container, ctx) {
-  const { audio, audioDetector, store } = ctx;
+/**
+ * The single Settings page: audio input, live chord monitor, the guided
+ * calibration wizard, one-off recalibration, and the chord library — all
+ * merged here since they're really one workflow (get your instrument
+ * recognized reliably), not separate destinations.
+ */
+export function renderSettings(container, ctx, { showReplayWizard = true } = {}) {
+  const { audio, audioDetector, store, navigate } = ctx;
   let wizardIndex = 0;
 
   container.innerHTML = `
     <div class="card">
-      <h2>Audio Setup</h2>
+      <h2>Settings</h2>
       <p class="hint">
         Listens to your USB audio interface/pedal directly — not your laptop's built-in
         microphone — and detects chords from the sound itself. Pick the device your guitar/pedal
-        actually appears as below, not the built-in mic.
+        actually appears as below, not the built-in mic, then calibrate the chords you plan to
+        use — that matters more than anything else here.
       </p>
+      ${
+        showReplayWizard
+          ? '<div class="row"><button class="btn" id="replay-wizard-btn">Replay setup wizard</button></div>'
+          : ''
+      }
+    </div>
+    <div class="card">
+      <h2>Audio Input</h2>
       ${!audio.isSupported ? '<p class="banner">This browser doesn’t support audio input capture. Use Chrome or Edge.</p>' : ''}
       <div class="row" id="audio-controls"></div>
     </div>
@@ -40,6 +56,7 @@ export function renderAudioSetup(container, ctx) {
     </div>
     <div class="card" id="wizard-panel"></div>
     <div class="card" id="calibrate-panel"></div>
+    <div class="card" id="library-host"></div>
   `;
 
   const controls = container.querySelector('#audio-controls');
@@ -49,6 +66,8 @@ export function renderAudioSetup(container, ctx) {
   const levelReadout = container.querySelector('#level-readout');
   const wizardPanel = container.querySelector('#wizard-panel');
   const calibratePanel = container.querySelector('#calibrate-panel');
+
+  container.querySelector('#replay-wizard-btn')?.addEventListener('click', () => navigate('onboarding'));
 
   function renderControls() {
     if (!audio.currentDeviceId) {
@@ -96,7 +115,7 @@ export function renderAudioSetup(container, ctx) {
     if (chords.length === 0) {
       wizardPanel.innerHTML = `
         <h2>Calibrate your chords</h2>
-        <p class="hint">Enable some chords in the Chord Library first, then come back here.</p>
+        <p class="hint">Enable some chords in the Chord Library below first, then come back here.</p>
       `;
       return;
     }
@@ -104,7 +123,7 @@ export function renderAudioSetup(container, ctx) {
     if (wizardIndex >= chords.length) {
       wizardPanel.innerHTML = `
         <h2>Calibrate your chords</h2>
-        <p class="hint">All ${chords.length} enabled chords calibrated. Head to Chord Racer to play, or restart to redo them.</p>
+        <p class="hint">All ${chords.length} enabled chords calibrated. Head to the Home screen to play, or restart to redo them.</p>
         <button class="btn" id="wizard-restart">Restart calibration</button>
       `;
       wizardPanel.querySelector('#wizard-restart').addEventListener('click', () => {
@@ -229,6 +248,7 @@ export function renderAudioSetup(container, ctx) {
   renderControls();
   renderWizard();
   renderCalibratePanel();
+  const cleanupLibrary = renderLibrary(container.querySelector('#library-host'), ctx);
 
   return () => {
     audio.removeEventListener('connected', renderControls);
@@ -240,5 +260,6 @@ export function renderAudioSetup(container, ctx) {
     audio.removeEventListener('deviceschanged', renderControls);
     audio.removeEventListener('chroma', onChroma);
     store.removeEventListener('change', onStoreChange);
+    cleanupLibrary?.();
   };
 }

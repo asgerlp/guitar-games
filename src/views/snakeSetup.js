@@ -47,12 +47,12 @@ export function renderSnake(container, ctx) {
         </p>
         ${
           !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Audio Setup", or enable keyboard fallback below to test.</p>'
+            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
             : ''
         }
         ${
           enabled.length < 4
-            ? '<p class="banner">Enable at least 4 chords in the Chord Library to play.</p>'
+            ? '<p class="banner">Enable at least 4 chords in Settings to play.</p>'
             : ''
         }
         <div class="lane-pick" id="chord-pick"></div>

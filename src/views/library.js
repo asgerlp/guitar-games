@@ -2,33 +2,26 @@ import { formatNoteSet } from '../chords/noteUtils.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 
 export function renderLibrary(container, ctx) {
-  const { store, navigate } = ctx;
+  const { store } = ctx;
 
   container.innerHTML = `
-    <div class="card">
-      <h2>Chord Library</h2>
-      <p class="hint">
-        These are the chords the app recognizes. The "Enabled" column controls which chords are
-        available to assign in games. To add a new chord or recalibrate one that isn't matching
-        reliably, use <strong>Audio Setup → Calibrate from audio</strong> — it captures the chord's
-        actual live sound, which works better than the defaults if your guitar/pickup/pedal sounds
-        different from what they assume (standard tuning, open position).
-      </p>
-      <div class="row" style="margin-bottom:1rem">
-        <button class="btn primary" id="go-to-audio-setup">Add / recalibrate a chord in Audio Setup</button>
-      </div>
-      <table>
-        <thead>
-          <tr><th>Enabled</th><th>Name</th><th>How to play</th><th>Notes</th><th>Source</th><th></th></tr>
-        </thead>
-        <tbody id="chord-rows"></tbody>
-      </table>
-    </div>
+    <h2>Chord Library</h2>
+    <p class="hint">
+      These are the chords the app recognizes. The "Enabled" column controls which chords are
+      available to assign in games. To add a new chord or recalibrate one that isn't matching
+      reliably, use the calibration sections above — capturing a chord's actual live sound works
+      better than the defaults if your guitar/pickup/pedal sounds different from what they assume
+      (standard tuning, open position).
+    </p>
+    <table>
+      <thead>
+        <tr><th>Enabled</th><th>Name</th><th>How to play</th><th>Notes</th><th>Source</th><th></th></tr>
+      </thead>
+      <tbody id="chord-rows"></tbody>
+    </table>
   `;
 
   const rowsEl = container.querySelector('#chord-rows');
-
-  container.querySelector('#go-to-audio-setup').addEventListener('click', () => navigate('audio'));
 
   function renderRows() {
     rowsEl.innerHTML = store
