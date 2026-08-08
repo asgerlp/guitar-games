@@ -1,4 +1,3 @@
-import { ChordRunGame, runParamsForLevel } from '../games/chordRun.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { loadJSON, saveJSON } from '../lib/storage.js';
 import { renderHighScoreSection } from '../lib/highScores.js';
@@ -46,12 +45,12 @@ export function renderRun(container, ctx) {
         </p>
         ${
           !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Audio Setup", or enable keyboard fallback below to test.</p>'
+            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
             : ''
         }
         ${
           enabled.length < 2
-            ? '<p class="banner">Enable at least 2 chords in the Chord Library to play.</p>'
+            ? '<p class="banner">Enable at least 2 chords in Settings to play.</p>'
             : ''
         }
         <div class="lane-pick" id="chord-pick"></div>
@@ -120,7 +119,7 @@ export function renderRun(container, ctx) {
     if (startBtn) startBtn.addEventListener('click', renderPlaying);
   }
 
-  function renderPlaying() {
+  async function renderPlaying() {
     const enabled = store.enabled();
     const chords = chordIds.map((id) => enabled.find((c) => c.id === id));
 
@@ -139,26 +138,34 @@ export function renderRun(container, ctx) {
             `
           ).join('')}
         </div>
-        <canvas id="run-canvas" width="480" height="420"></canvas>
+        <canvas id="run-canvas" width="480" height="520"></canvas>
+        <p class="hint" id="run-loading">Loading 3D engine…</p>
         <button class="btn" id="quit-btn">Quit to setup</button>
       </div>
     `;
 
     const canvas = container.querySelector('#run-canvas');
     const scoreEl = container.querySelector('#hud-score');
+    const loadingEl = container.querySelector('#run-loading');
 
+    container.querySelector('#quit-btn').addEventListener('click', () => {
+      if (game) game.stop();
+      game = null;
+      renderSetup();
+    });
+
+    // Chord Run is the only game that needs three.js, so it's loaded on
+    // demand here rather than bundled into every page load.
+    const { ChordRunGame, runParamsForLevel } = await import('../games/chordRun.js');
+    if (!canvas.isConnected) return; // quit/navigated away while the engine was loading
+
+    loadingEl.remove();
     game = new ChordRunGame(canvas, { chordIds, detector, keyboardFallback, ...runParamsForLevel(level) });
     game.addEventListener('tick', (e) => {
       scoreEl.textContent = e.detail.score;
     });
     game.addEventListener('gameover', (e) => renderGameOver(e.detail.score));
     game.start();
-
-    container.querySelector('#quit-btn').addEventListener('click', () => {
-      game.stop();
-      game = null;
-      renderSetup();
-    });
   }
 
   function renderGameOver(score) {

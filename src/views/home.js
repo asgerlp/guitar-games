@@ -4,9 +4,9 @@ export function renderHome(container, ctx) {
       <h2>Welcome</h2>
       <p class="hint">
         Connect your guitar's USB audio interface/pedal and it'll show up under
-        <strong>Audio Setup</strong> — pick it there (not your laptop's built-in mic) and chord
-        recognition runs on that signal directly. Head to <strong>Chord Library</strong> to see or
-        customize which chords are recognized, then pick a game below.
+        <strong>Settings</strong> — pick it there (not your laptop's built-in mic) and chord
+        recognition runs on that signal directly. Settings also has the chord library, so you can
+        see or customize which chords are recognized, then pick a game below.
       </p>
     </div>
     <div class="card">
