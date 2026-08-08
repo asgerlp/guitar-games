@@ -1,44 +1,41 @@
 export function renderHome(container, ctx) {
+  const { t } = ctx;
+
   container.innerHTML = `
     <div class="card">
-      <h2>Welcome</h2>
-      <p class="hint">
-        Connect your guitar's USB audio interface/pedal and it'll show up under
-        <strong>Settings</strong> — pick it there (not your laptop's built-in mic) and chord
-        recognition runs on that signal directly. Settings also has the chord library, so you can
-        see or customize which chords are recognized, then pick a game below.
-      </p>
+      <h2>${t('home.welcomeTitle')}</h2>
+      <p class="hint">${t('home.welcomeBody')}</p>
     </div>
     <div class="card">
-      <h2>Games</h2>
+      <h2>${t('home.gamesTitle')}</h2>
       <div class="game-select-grid">
         <button class="game-tile" id="tile-racer">
           <h3>🏎️ Chord Racer</h3>
-          <p>Steer between lanes by switching chords. Dodge obstacles. Speed ramps up over time.</p>
+          <p>${t('home.racerDesc')}</p>
         </button>
         <button class="game-tile" id="tile-fight">
           <h3>🥋 Chord Fight</h3>
-          <p>Face off against the CPU. Block its telegraphed attacks and hit back with different chords.</p>
+          <p>${t('home.fightDesc')}</p>
         </button>
         <button class="game-tile" id="tile-flap">
           <h3>🐦 Chord Flap</h3>
-          <p>Hold the active chord to rise and dodge pipes — it keeps rotating, so one shape won't carry you.</p>
+          <p>${t('home.flapDesc')}</p>
         </button>
         <button class="game-tile" id="tile-pong">
           <h3>🏓 Chord Pong</h3>
-          <p>Hold one chord to slide the paddle left, another to slide right — keep the ball in play.</p>
+          <p>${t('home.pongDesc')}</p>
         </button>
         <button class="game-tile" id="tile-run">
           <h3>🏃 Chord Run</h3>
-          <p>Jump logs and duck beams with two chords. Hold jump to keep hopping, hold duck to slide under.</p>
+          <p>${t('home.runDesc')}</p>
         </button>
         <button class="game-tile" id="tile-snake">
           <h3>🐍 Chord Snake</h3>
-          <p>Four chords steer up/down/left/right. Classic snake — eat food, don't hit yourself or a wall.</p>
+          <p>${t('home.snakeDesc')}</p>
         </button>
         <button class="game-tile" id="tile-scores">
-          <h3>🏆 High Scores</h3>
-          <p>See the top 10 for each game. Land a top-10 run and you'll be asked for your name.</p>
+          <h3>🏆 ${t('home.highScoresTitle')}</h3>
+          <p>${t('home.highScoresDesc')}</p>
         </button>
       </div>
     </div>

@@ -10,7 +10,7 @@ const LANE_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.racerSetup';
 
 export function renderRacer(container, ctx) {
-  const { store, audio, detector } = ctx;
+  const { store, audio, detector, t } = ctx;
   const difficulty = new DifficultyModel();
   const saved = loadJSON(SETTINGS_KEY, {});
 
@@ -18,6 +18,10 @@ export function renderRacer(container, ctx) {
   let laneChordIds = [];
   let keyboardFallback = saved.keyboardFallback ?? false;
   let game = null;
+
+  function laneLabelsFor(count) {
+    return count === 2 ? [t('racer.laneLeft'), t('racer.laneRight')] : Array.from({ length: count }, (_, i) => t('racer.laneN', { n: i + 1 }));
+  }
 
   function defaultLaneAssignment(count) {
     const enabled = store.enabled();
@@ -45,27 +49,16 @@ export function renderRacer(container, ctx) {
 
   function renderSetup() {
     const enabled = store.enabled();
-    const laneLabels = laneCount === 2 ? ['Left', 'Right'] : Array.from({ length: laneCount }, (_, i) => `Lane ${i + 1}`);
+    const laneLabels = laneLabelsFor(laneCount);
 
     container.innerHTML = `
       <div class="card">
         <h2>🏎️ Chord Racer</h2>
-        <p class="hint">
-          The car drifts to whichever lane's chord you're currently holding. Obstacles fall faster
-          the longer you survive — switch chords cleanly and quickly to dodge them.
-        </p>
-        ${
-          !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
-            : ''
-        }
-        ${
-          enabled.length < 2
-            ? '<p class="banner">Enable at least 2 chords in Settings to play.</p>'
-            : ''
-        }
+        <p class="hint">${t('racer.description')}</p>
+        ${!audio.currentDeviceId ? `<p class="banner">${t('common.noAudioBanner')}</p>` : ''}
+        ${enabled.length < 2 ? `<p class="banner">${t('common.enableChordsBanner', { count: 2 })}</p>` : ''}
         <div class="row" style="margin-bottom:1rem">
-          <label class="small" for="lane-count">Lanes</label>
+          <label class="small" for="lane-count">${t('racer.lanesLabel')}</label>
           <select id="lane-count">
             ${[2, 3, 4].map((n) => `<option value="${n}" ${n === laneCount ? 'selected' : ''}>${n}</option>`).join('')}
           </select>
@@ -73,37 +66,32 @@ export function renderRacer(container, ctx) {
         <div class="lane-pick" id="lane-pick"></div>
         <label class="checkbox-row" style="margin-top:1rem">
           <input type="checkbox" id="kb-fallback" ${keyboardFallback ? 'checked' : ''} />
-          <span class="small">Enable arrow-key fallback (for testing without a guitar)</span>
+          <span class="small">${t('racer.kbFallbackLabel')}</span>
         </label>
         <div style="margin-top:1.25rem">
-          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
+          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>${t('common.startBtn')}</button>
         </div>
       </div>
       <div class="card">
-        <h2>Difficulty</h2>
-        <p class="hint">
-          Pick a level to jump straight to a preset. From there it still adapts to you
-          automatically: a run that ends almost instantly backs off and gives you more room to
-          react, a run you comfortably survive shortens that room, and everything in between
-          nudges it up gently over time.
-        </p>
+        <h2>${t('common.difficultyTitle')}</h2>
+        <p class="hint">${t('racer.difficultyHint')}</p>
         <div class="level-picker" id="level-picker" style="margin-bottom:1rem"></div>
         <div class="row">
-          <span class="small">Start speed: <strong>${Math.round(difficulty.get().startSpeed)}</strong> px/s</span>
-          <span class="small">Ramp: <strong>${difficulty.get().rampPerSec.toFixed(1)}</strong> px/s²</span>
-          <span class="small">Reaction room: <strong>${Math.round(difficulty.get().carInset)}</strong> px</span>
-          <span class="small">Obstacle gap: <strong>${difficulty.get().obstacleGapSec.toFixed(2)}</strong> s</span>
-          <button class="btn" id="reset-difficulty-btn">Reset to default</button>
+          <span class="small">${t('racer.startSpeedStat', { value: Math.round(difficulty.get().startSpeed) })}</span>
+          <span class="small">${t('racer.rampStat', { value: difficulty.get().rampPerSec.toFixed(1) })}</span>
+          <span class="small">${t('racer.reactionRoomStat', { value: Math.round(difficulty.get().carInset) })}</span>
+          <span class="small">${t('racer.obstacleGapStat', { value: difficulty.get().obstacleGapSec.toFixed(2) })}</span>
+          <button class="btn" id="reset-difficulty-btn">${t('racer.resetDifficultyBtn')}</button>
         </div>
         <div class="row" style="margin-top:0.75rem">
-          <label class="small" for="manual-speed">Set start speed manually</label>
+          <label class="small" for="manual-speed">${t('racer.manualSpeedLabel')}</label>
           <input type="number" id="manual-speed" min="50" max="260" step="5" value="${Math.round(difficulty.get().startSpeed)}" style="width:5rem" />
-          <button class="btn" id="manual-speed-btn">Set</button>
+          <button class="btn" id="manual-speed-btn">${t('racer.setBtn')}</button>
         </div>
         <div class="row" style="margin-top:0.75rem">
-          <label class="small" for="manual-gap">Minimum time between obstacles (seconds)</label>
+          <label class="small" for="manual-gap">${t('racer.manualGapLabel')}</label>
           <input type="number" id="manual-gap" min="0.6" max="4" step="0.1" value="${difficulty.get().obstacleGapSec.toFixed(2)}" style="width:5rem" />
-          <button class="btn" id="manual-gap-btn">Set</button>
+          <button class="btn" id="manual-gap-btn">${t('racer.setBtn')}</button>
         </div>
       </div>
     `;
@@ -130,7 +118,7 @@ export function renderRacer(container, ctx) {
       const holder = lanePick.querySelector(`[data-diagram="${i}"]`);
       holder.innerHTML = chord?.frets
         ? renderChordDiagram(chord.frets)
-        : '<span class="small">no diagram</span>';
+        : `<span class="small">${t('common.noDiagram')}</span>`;
     }
 
     laneLabels.forEach((_, i) => renderLaneDiagram(i));
@@ -158,6 +146,7 @@ export function renderRacer(container, ctx) {
 
     renderLevelPicker(container.querySelector('#level-picker'), {
       value: difficulty.get().level ?? DEFAULT_LEVEL,
+      t,
       onChange: (level) => {
         difficulty.applyLevel(level);
         renderSetup();
@@ -192,14 +181,13 @@ export function renderRacer(container, ctx) {
   function renderPlaying() {
     const enabled = store.enabled();
     const laneChords = laneChordIds.map((id) => enabled.find((c) => c.id === id));
-    const laneLabels =
-      laneCount === 2 ? ['Left', 'Right'] : Array.from({ length: laneCount }, (_, i) => `Lane ${i + 1}`);
+    const laneLabels = laneLabelsFor(laneCount);
 
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
-          <span>Score: <strong id="hud-score">0</strong></span>
-          <span>Lanes: <strong>${laneChords.map((c) => c?.name ?? '?').join(' / ')}</strong></span>
+          <span>${t('common.scoreLabel')} <strong id="hud-score">0</strong></span>
+          <span>${t('racer.lanesHud', { lanes: laneChords.map((c) => c?.name ?? '?').join(' / ') })}</span>
         </div>
         <div class="lane-legend">
           ${laneLabels
@@ -214,7 +202,7 @@ export function renderRacer(container, ctx) {
             .join('')}
         </div>
         <canvas id="racer-canvas" width="480" height="760"></canvas>
-        <button class="btn" id="quit-btn">Quit to setup</button>
+        <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
 
@@ -249,24 +237,24 @@ export function renderRacer(container, ctx) {
 
   function renderGameOver(score, direction) {
     const feedback = {
-      up: "Nice run — next one gives you a little less room to react.",
-      down: "That was over fast — next one gives you more room to react so you can find your footing.",
-      same: 'Difficulty holding steady for the next run.',
+      up: t('racer.feedbackUp'),
+      down: t('racer.feedbackDown'),
+      same: t('racer.feedbackSame'),
     }[direction];
 
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2>Game Over</h2>
+        <h2>${t('common.gameOverTitle')}</h2>
         <div class="score">${score}</div>
         <p class="hint">${feedback}</p>
         <div id="hs-host"></div>
         <div class="row" style="justify-content:center; margin-top:1rem">
-          <button class="btn primary" id="retry-btn">Play again</button>
-          <button class="btn" id="setup-btn">Change settings</button>
+          <button class="btn primary" id="retry-btn">${t('common.playAgainBtn')}</button>
+          <button class="btn" id="setup-btn">${t('common.changeSettingsBtn')}</button>
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'racer', difficulty.get().level, score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'racer', difficulty.get().level, score, t);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

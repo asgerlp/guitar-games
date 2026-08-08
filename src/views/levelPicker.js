@@ -5,10 +5,10 @@ import { LEVELS } from '../games/difficultyLevels.js';
  * handling. `onChange` is called with the new level id; the caller decides
  * what that means for their game and is responsible for re-rendering.
  */
-export function renderLevelPicker(hostEl, { value, onChange }) {
+export function renderLevelPicker(hostEl, { value, onChange, t }) {
   hostEl.innerHTML = LEVELS.map(
     (lvl) =>
-      `<button type="button" class="btn level-btn${lvl.id === value ? ' active' : ''}" data-level="${lvl.id}">${lvl.label}</button>`
+      `<button type="button" class="btn level-btn${lvl.id === value ? ' active' : ''}" data-level="${lvl.id}">${t(lvl.labelKey)}</button>`
   ).join('');
 
   hostEl.querySelectorAll('[data-level]').forEach((btn) => {

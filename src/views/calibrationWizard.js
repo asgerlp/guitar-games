@@ -11,7 +11,7 @@ import { renderChordDiagram } from '../chords/chordDiagram.js';
  * `onDone` skips that panel and advances to the next step instead.
  */
 export function renderCalibrationWizard(hostEl, ctx, { onDone } = {}) {
-  const { store, audio, audioDetector } = ctx;
+  const { store, audio, audioDetector, t } = ctx;
   let index = 0;
 
   function render() {
@@ -19,7 +19,7 @@ export function renderCalibrationWizard(hostEl, ctx, { onDone } = {}) {
     const hasInput = !!audio.currentDeviceId;
 
     if (chords.length === 0) {
-      hostEl.innerHTML = '<p class="hint">Enable some chords in the Chord Library first, then come back here.</p>';
+      hostEl.innerHTML = `<p class="hint">${t('calibrate.noChordsEnabled')}</p>`;
       return;
     }
 
@@ -29,8 +29,8 @@ export function renderCalibrationWizard(hostEl, ctx, { onDone } = {}) {
         return;
       }
       hostEl.innerHTML = `
-        <p class="hint">All ${chords.length} enabled chords calibrated. Head to the Home screen to play, or restart to redo them.</p>
-        <button class="btn" id="wizard-restart">Restart calibration</button>
+        <p class="hint">${t('calibrate.allDone', { count: chords.length })}</p>
+        <button class="btn" id="wizard-restart">${t('calibrate.restartBtn')}</button>
       `;
       hostEl.querySelector('#wizard-restart').addEventListener('click', () => {
         index = 0;
@@ -41,21 +41,18 @@ export function renderCalibrationWizard(hostEl, ctx, { onDone } = {}) {
 
     const chord = chords[index];
     hostEl.innerHTML = `
-      <p class="hint">
-        Walk through each chord you use and capture its real sound — this matters more than
-        anything else here, since it's what actually drives recognition.
-      </p>
-      <p class="small">Chord ${index + 1} of ${chords.length}</p>
+      <p class="hint">${t('calibrate.walkthroughHint')}</p>
+      <p class="small">${t('calibrate.chordProgress', { index: index + 1, total: chords.length })}</p>
       <div class="row" style="align-items:center; gap:1.25rem">
         <div class="detected-chord">${chord.name}</div>
         ${chord.frets ? renderChordDiagram(chord.frets) : ''}
       </div>
-      <p class="hint">Strum and hold ${chord.name}, then capture.</p>
+      <p class="hint">${t('calibrate.strumAndHold', { chord: chord.name })}</p>
       <div class="row">
-        <button class="btn primary" id="wizard-capture" ${hasInput ? '' : 'disabled'}>Capture ${chord.name}</button>
-        <button class="btn" id="wizard-skip">Skip</button>
+        <button class="btn primary" id="wizard-capture" ${hasInput ? '' : 'disabled'}>${t('calibrate.captureBtn', { chord: chord.name })}</button>
+        <button class="btn" id="wizard-skip">${t('calibrate.skipBtn')}</button>
       </div>
-      ${!hasInput ? '<p class="small" style="margin-top:0.5rem">Connect audio input first.</p>' : ''}
+      ${!hasInput ? `<p class="small" style="margin-top:0.5rem">${t('calibrate.connectAudioFirst')}</p>` : ''}
     `;
 
     hostEl.querySelector('#wizard-capture').addEventListener('click', () => {

@@ -9,7 +9,7 @@ const CHORD_COUNT_DEFAULT = 3;
 const SETTINGS_KEY = 'guitarGames.flapSetup';
 
 export function renderFlap(container, ctx) {
-  const { store, audio, detector } = ctx;
+  const { store, audio, detector, t } = ctx;
   const saved = loadJSON(SETTINGS_KEY, {});
 
   let chordCount = saved.chordCount ?? CHORD_COUNT_DEFAULT;
@@ -43,23 +43,11 @@ export function renderFlap(container, ctx) {
     container.innerHTML = `
       <div class="card">
         <h2>🐦 Chord Flap</h2>
-        <p class="hint">
-          Hold whichever chord is currently marked <strong>active</strong> to rise — let go (or play
-          anything else) and gravity takes over. The active chord keeps rotating between your
-          assigned chords through the run, so watch the legend rather than settling into one shape.
-        </p>
-        ${
-          !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
-            : ''
-        }
-        ${
-          enabled.length < 2
-            ? '<p class="banner">Enable at least 2 chords in Settings to play.</p>'
-            : ''
-        }
+        <p class="hint">${t('flap.description')}</p>
+        ${!audio.currentDeviceId ? `<p class="banner">${t('common.noAudioBanner')}</p>` : ''}
+        ${enabled.length < 2 ? `<p class="banner">${t('common.enableChordsBanner', { count: 2 })}</p>` : ''}
         <div class="row" style="margin-bottom:1rem">
-          <label class="small" for="chord-count">Chords to use</label>
+          <label class="small" for="chord-count">${t('common.chordsToUseLabel')}</label>
           <select id="chord-count">
             ${[2, 3, 4].map((n) => `<option value="${n}" ${n === chordCount ? 'selected' : ''}>${n}</option>`).join('')}
           </select>
@@ -67,15 +55,15 @@ export function renderFlap(container, ctx) {
         <div class="lane-pick" id="chord-pick"></div>
         <label class="checkbox-row" style="margin-top:1rem">
           <input type="checkbox" id="kb-fallback" ${keyboardFallback ? 'checked' : ''} />
-          <span class="small">Enable number-key fallback 1-4, held down (for testing without a guitar)</span>
+          <span class="small">${t('flap.kbFallbackLabel')}</span>
         </label>
         <div style="margin-top:1.25rem">
-          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
+          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>${t('common.startBtn')}</button>
         </div>
       </div>
       <div class="card">
-        <h2>Difficulty</h2>
-        <p class="hint">Controls how often the active chord rotates and how tight the pipes are — the lower levels give you a lot more time to settle into each chord.</p>
+        <h2>${t('common.difficultyTitle')}</h2>
+        <p class="hint">${t('flap.difficultyHint')}</p>
         <div class="level-picker" id="level-picker"></div>
       </div>
     `;
@@ -85,7 +73,7 @@ export function renderFlap(container, ctx) {
       .map(
         (_, i) => `
         <div class="lane-slot">
-          <label>Chord ${i + 1}</label>
+          <label>${t('flap.chordN', { n: i + 1 })}</label>
           <select data-slot="${i}">
             ${enabled
               .map((c) => `<option value="${c.id}" ${chordIds[i] === c.id ? 'selected' : ''}>${c.name}</option>`)
@@ -100,7 +88,7 @@ export function renderFlap(container, ctx) {
     function renderDiagram(i) {
       const chord = store.get(chordIds[i]);
       const holder = chordPick.querySelector(`[data-diagram="${i}"]`);
-      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : '<span class="small">no diagram</span>';
+      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : `<span class="small">${t('common.noDiagram')}</span>`;
     }
 
     chordIds.forEach((_, i) => renderDiagram(i));
@@ -128,6 +116,7 @@ export function renderFlap(container, ctx) {
 
     renderLevelPicker(container.querySelector('#level-picker'), {
       value: level,
+      t,
       onChange: (newLevel) => {
         level = newLevel;
         persistSettings();
@@ -146,8 +135,8 @@ export function renderFlap(container, ctx) {
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
-          <span>Active chord: <strong id="hud-active-chord">${chords[0]?.name ?? '?'}</strong></span>
-          <span>Score: <strong id="hud-score">0</strong></span>
+          <span>${t('flap.activeChordHud')} <strong id="hud-active-chord">${chords[0]?.name ?? '?'}</strong></span>
+          <span>${t('common.scoreLabel')} <strong id="hud-score">0</strong></span>
         </div>
         <div class="lane-legend" id="flap-legend">
           ${chords
@@ -162,7 +151,7 @@ export function renderFlap(container, ctx) {
             .join('')}
         </div>
         <canvas id="flap-canvas" width="480" height="640"></canvas>
-        <button class="btn" id="quit-btn">Quit to setup</button>
+        <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
 
@@ -197,20 +186,17 @@ export function renderFlap(container, ctx) {
   function renderGameOver(score) {
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2>Game Over</h2>
-        <div class="score">Score: ${score}</div>
-        <p class="hint">
-          Crashed into a pipe or the edge. Keep an eye on the legend — the active chord changes
-          through the run.
-        </p>
+        <h2>${t('common.gameOverTitle')}</h2>
+        <div class="score">${t('common.scoreLabel')} ${score}</div>
+        <p class="hint">${t('flap.gameOverHint')}</p>
         <div id="hs-host"></div>
         <div class="row" style="justify-content:center; margin-top:1rem">
-          <button class="btn primary" id="retry-btn">Play again</button>
-          <button class="btn" id="setup-btn">Change settings</button>
+          <button class="btn primary" id="retry-btn">${t('common.playAgainBtn')}</button>
+          <button class="btn" id="setup-btn">${t('common.changeSettingsBtn')}</button>
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'flap', level, score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'flap', level, score, t);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

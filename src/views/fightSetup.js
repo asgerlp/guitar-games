@@ -9,7 +9,7 @@ const ACTION_COUNT_DEFAULT = 2;
 const SETTINGS_KEY = 'guitarGames.fightSetup';
 
 export function renderFight(container, ctx) {
-  const { store, audio, detector } = ctx;
+  const { store, audio, detector, t } = ctx;
   const saved = loadJSON(SETTINGS_KEY, {});
 
   let actionCount = saved.actionCount ?? ACTION_COUNT_DEFAULT;
@@ -46,24 +46,11 @@ export function renderFight(container, ctx) {
     container.innerHTML = `
       <div class="card">
         <h2>🥋 Chord Fight</h2>
-        <p class="hint">
-          Face off against the CPU. It briefly winds up before every attack — hold whichever
-          chord you've mapped to <strong>Block</strong> during that window to negate it. Play an
-          attack-type chord to hit back; each one has a short cooldown, so switching between
-          chords is what actually wins fights, not spamming one.
-        </p>
-        ${
-          !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
-            : ''
-        }
-        ${
-          enabled.length < 2
-            ? '<p class="banner">Enable at least 2 chords in Settings to play.</p>'
-            : ''
-        }
+        <p class="hint">${t('fight.description')}</p>
+        ${!audio.currentDeviceId ? `<p class="banner">${t('common.noAudioBanner')}</p>` : ''}
+        ${enabled.length < 2 ? `<p class="banner">${t('common.enableChordsBanner', { count: 2 })}</p>` : ''}
         <div class="row" style="margin-bottom:1rem">
-          <label class="small" for="action-count">Chords to use</label>
+          <label class="small" for="action-count">${t('common.chordsToUseLabel')}</label>
           <select id="action-count">
             ${[2, 3, 4].map((n) => `<option value="${n}" ${n === actionCount ? 'selected' : ''}>${n}</option>`).join('')}
           </select>
@@ -71,15 +58,15 @@ export function renderFight(container, ctx) {
         <div class="lane-pick" id="action-pick"></div>
         <label class="checkbox-row" style="margin-top:1rem">
           <input type="checkbox" id="kb-fallback" ${keyboardFallback ? 'checked' : ''} />
-          <span class="small">Enable number-key fallback 1-4 (for testing without a guitar)</span>
+          <span class="small">${t('fight.kbFallbackLabel')}</span>
         </label>
         <div style="margin-top:1.25rem">
-          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
+          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>${t('common.startBtn')}</button>
         </div>
       </div>
       <div class="card">
-        <h2>Difficulty</h2>
-        <p class="hint">Controls how fast and hard the CPU attacks, and how long its wind-up telegraph gives you to block.</p>
+        <h2>${t('common.difficultyTitle')}</h2>
+        <p class="hint">${t('fight.difficultyHint')}</p>
         <div class="level-picker" id="level-picker"></div>
       </div>
     `;
@@ -89,7 +76,7 @@ export function renderFight(container, ctx) {
       .map(
         (type, i) => `
         <div class="lane-slot">
-          <label>${ACTION_DEFS[type].label}</label>
+          <label>${t(ACTION_DEFS[type].labelKey)}</label>
           <select data-action="${i}">
             ${enabled
               .map((c) => `<option value="${c.id}" ${actionChordIds[i] === c.id ? 'selected' : ''}>${c.name}</option>`)
@@ -104,7 +91,7 @@ export function renderFight(container, ctx) {
     function renderDiagram(i) {
       const chord = store.get(actionChordIds[i]);
       const holder = actionPick.querySelector(`[data-diagram="${i}"]`);
-      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : '<span class="small">no diagram</span>';
+      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : `<span class="small">${t('common.noDiagram')}</span>`;
     }
 
     actionTypes.forEach((_, i) => renderDiagram(i));
@@ -132,6 +119,7 @@ export function renderFight(container, ctx) {
 
     renderLevelPicker(container.querySelector('#level-picker'), {
       value: level,
+      t,
       onChange: (newLevel) => {
         level = newLevel;
         persistSettings();
@@ -151,15 +139,15 @@ export function renderFight(container, ctx) {
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
-          <span>You: <strong id="hud-player-hp">100</strong> HP</span>
-          <span>CPU: <strong id="hud-cpu-hp">100</strong> HP</span>
+          <span>${t('fight.playerHpHud')} <strong id="hud-player-hp">100</strong> HP</span>
+          <span>${t('fight.cpuHpHud')} <strong id="hud-cpu-hp">100</strong> HP</span>
         </div>
         <div class="lane-legend">
           ${actionTypes
             .map(
               (type, i) => `
               <div class="legend-item">
-                <span class="small">${ACTION_DEFS[type].label}: ${actionChords[i]?.name ?? '?'}</span>
+                <span class="small">${t(ACTION_DEFS[type].labelKey)}: ${actionChords[i]?.name ?? '?'}</span>
                 ${actionChords[i]?.frets ? renderChordDiagram(actionChords[i].frets, { width: 48, height: 62 }) : ''}
               </div>
             `
@@ -167,7 +155,7 @@ export function renderFight(container, ctx) {
             .join('')}
         </div>
         <canvas id="fight-canvas" width="480" height="480"></canvas>
-        <button class="btn" id="quit-btn">Quit to setup</button>
+        <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
 
@@ -180,6 +168,9 @@ export function renderFight(container, ctx) {
       actionTypes,
       detector,
       keyboardFallback,
+      youLabel: t('fight.youLabel'),
+      cpuLabel: t('fight.cpuLabel'),
+      blockedLabel: t('fight.blockedLabel'),
       ...cpuParamsForLevel(level),
     });
     game.addEventListener('tick', (e) => {
@@ -200,20 +191,20 @@ export function renderFight(container, ctx) {
     const win = result === 'win';
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2 class="${win ? 'win' : 'lose'}">${win ? 'You Win!' : 'Knocked Out'}</h2>
+        <h2 class="${win ? 'win' : 'lose'}">${win ? t('fight.winTitle') : t('fight.loseTitle')}</h2>
         <div class="score">${win ? '🥋' : '💥'}</div>
         <p class="hint">
-          ${win ? 'Nice reflexes — block on time and hit back cleanly for a rematch.' : 'The CPU got the better of you this time. Watch for the wind-up and block it.'}
+          ${win ? t('fight.winHint') : t('fight.loseHint')}
         </p>
-        <p class="hint">Damage dealt: <strong>${score}</strong></p>
+        <p class="hint">${t('fight.damageDealt', { score })}</p>
         <div id="hs-host"></div>
         <div class="row" style="justify-content:center; margin-top:1rem">
-          <button class="btn primary" id="retry-btn">Play again</button>
-          <button class="btn" id="setup-btn">Change settings</button>
+          <button class="btn primary" id="retry-btn">${t('common.playAgainBtn')}</button>
+          <button class="btn" id="setup-btn">${t('common.changeSettingsBtn')}</button>
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'fight', level, score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'fight', level, score, t);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

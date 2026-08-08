@@ -5,16 +5,19 @@ import { renderLevelPicker } from './levelPicker.js';
 import { DEFAULT_LEVEL } from '../games/difficultyLevels.js';
 
 const SETTINGS_KEY = 'guitarGames.runSetup';
-const SLOT_LABELS = ['Jump', 'Duck'];
 
 export function renderRun(container, ctx) {
-  const { store, audio, detector } = ctx;
+  const { store, audio, detector, t } = ctx;
   const saved = loadJSON(SETTINGS_KEY, {});
 
   let chordIds = [];
   let keyboardFallback = saved.keyboardFallback ?? false;
   let level = saved.level ?? DEFAULT_LEVEL;
   let game = null;
+
+  function slotLabels() {
+    return [t('run.jump'), t('run.duck')];
+  }
 
   function defaultAssignment() {
     const enabled = store.enabled();
@@ -37,40 +40,27 @@ export function renderRun(container, ctx) {
     container.innerHTML = `
       <div class="card">
         <h2>🏃 Chord Run</h2>
-        <p class="hint">
-          Keep running. Play the <strong>Jump</strong> chord to hop over low obstacles — hold it
-          and you'll keep hopping — and hold the <strong>Duck</strong> chord to slide under high
-          ones. You can only be doing one at a time, so a run of alternating obstacles means
-          genuinely switching chords, not picking one and holding it forever.
-        </p>
-        ${
-          !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
-            : ''
-        }
-        ${
-          enabled.length < 2
-            ? '<p class="banner">Enable at least 2 chords in Settings to play.</p>'
-            : ''
-        }
+        <p class="hint">${t('run.description')}</p>
+        ${!audio.currentDeviceId ? `<p class="banner">${t('common.noAudioBanner')}</p>` : ''}
+        ${enabled.length < 2 ? `<p class="banner">${t('common.enableChordsBanner', { count: 2 })}</p>` : ''}
         <div class="lane-pick" id="chord-pick"></div>
         <label class="checkbox-row" style="margin-top:1rem">
           <input type="checkbox" id="kb-fallback" ${keyboardFallback ? 'checked' : ''} />
-          <span class="small">Enable number-key fallback 1-2 (for testing without a guitar)</span>
+          <span class="small">${t('run.kbFallbackLabel')}</span>
         </label>
         <div style="margin-top:1.25rem">
-          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>Start</button>
+          <button class="btn primary" id="start-btn" ${enabled.length < 2 ? 'disabled' : ''}>${t('common.startBtn')}</button>
         </div>
       </div>
       <div class="card">
-        <h2>Difficulty</h2>
-        <p class="hint">Controls how fast the world scrolls and the minimum time between obstacles.</p>
+        <h2>${t('common.difficultyTitle')}</h2>
+        <p class="hint">${t('run.difficultyHint')}</p>
         <div class="level-picker" id="level-picker"></div>
       </div>
     `;
 
     const chordPick = container.querySelector('#chord-pick');
-    chordPick.innerHTML = SLOT_LABELS.map(
+    chordPick.innerHTML = slotLabels().map(
       (label, i) => `
         <div class="lane-slot">
           <label>${label}</label>
@@ -87,10 +77,10 @@ export function renderRun(container, ctx) {
     function renderDiagram(i) {
       const chord = store.get(chordIds[i]);
       const holder = chordPick.querySelector(`[data-diagram="${i}"]`);
-      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : '<span class="small">no diagram</span>';
+      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : `<span class="small">${t('common.noDiagram')}</span>`;
     }
 
-    SLOT_LABELS.forEach((_, i) => renderDiagram(i));
+    slotLabels().forEach((_, i) => renderDiagram(i));
 
     chordPick.querySelectorAll('select[data-slot]').forEach((sel) => {
       sel.addEventListener('change', () => {
@@ -108,6 +98,7 @@ export function renderRun(container, ctx) {
 
     renderLevelPicker(container.querySelector('#level-picker'), {
       value: level,
+      t,
       onChange: (newLevel) => {
         level = newLevel;
         persistSettings();
@@ -126,10 +117,10 @@ export function renderRun(container, ctx) {
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
-          <span>Score: <strong id="hud-score">0</strong></span>
+          <span>${t('common.scoreLabel')} <strong id="hud-score">0</strong></span>
         </div>
         <div class="lane-legend">
-          ${SLOT_LABELS.map(
+          ${slotLabels().map(
             (label, i) => `
               <div class="legend-item">
                 <span class="small">${label}: ${chords[i]?.name ?? '?'}</span>
@@ -139,8 +130,8 @@ export function renderRun(container, ctx) {
           ).join('')}
         </div>
         <canvas id="run-canvas" width="480" height="520"></canvas>
-        <p class="hint" id="run-loading">Loading 3D engine…</p>
-        <button class="btn" id="quit-btn">Quit to setup</button>
+        <p class="hint" id="run-loading">${t('run.loadingEngine')}</p>
+        <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
 
@@ -171,17 +162,17 @@ export function renderRun(container, ctx) {
   function renderGameOver(score) {
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2>Game Over</h2>
+        <h2>${t('common.gameOverTitle')}</h2>
         <div class="score">${score}</div>
-        <p class="hint">Caught by an obstacle. Logs need a jump, beams need a duck — watch which is coming.</p>
+        <p class="hint">${t('run.gameOverHint')}</p>
         <div id="hs-host"></div>
         <div class="row" style="justify-content:center; margin-top:1rem">
-          <button class="btn primary" id="retry-btn">Play again</button>
-          <button class="btn" id="setup-btn">Change settings</button>
+          <button class="btn primary" id="retry-btn">${t('common.playAgainBtn')}</button>
+          <button class="btn" id="setup-btn">${t('common.changeSettingsBtn')}</button>
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'run', level, score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'run', level, score, t);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

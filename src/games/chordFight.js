@@ -18,10 +18,10 @@ const DEFAULT_CPU_DAMAGE_MAX = 24;
 // verified via simulation against a frame-perfect "never block" bot before
 // picking these numbers.
 export const ACTION_DEFS = {
-  attack: { label: 'Attack', damage: 5, cooldownSec: 0.65 },
-  kick: { label: 'Kick', damage: 7, cooldownSec: 0.9 },
-  special: { label: 'Special', damage: 10, cooldownSec: 1.3 },
-  block: { label: 'Block', damage: 0, cooldownSec: 0 },
+  attack: { labelKey: 'fight.actionAttack', damage: 5, cooldownSec: 0.65 },
+  kick: { labelKey: 'fight.actionKick', damage: 7, cooldownSec: 0.9 },
+  special: { labelKey: 'fight.actionSpecial', damage: 10, cooldownSec: 1.3 },
+  block: { labelKey: 'fight.actionBlock', damage: 0, cooldownSec: 0 },
 };
 
 /** Which action each of 2-4 assigned chords maps to, in order. */
@@ -67,6 +67,9 @@ export class ChordFightGame extends EventTarget {
       cpuAttackMaxInterval = DEFAULT_CPU_ATTACK_MAX_INTERVAL,
       cpuDamageMin = DEFAULT_CPU_DAMAGE_MIN,
       cpuDamageMax = DEFAULT_CPU_DAMAGE_MAX,
+      youLabel = 'You',
+      cpuLabel = 'CPU',
+      blockedLabel = 'Blocked!',
     }
   ) {
     super();
@@ -81,6 +84,9 @@ export class ChordFightGame extends EventTarget {
     this.cpuAttackMaxInterval = cpuAttackMaxInterval;
     this.cpuDamageMin = cpuDamageMin;
     this.cpuDamageMax = cpuDamageMax;
+    this.youLabel = youLabel;
+    this.cpuLabel = cpuLabel;
+    this.blockedLabel = blockedLabel;
 
     this.playerHealth = PLAYER_MAX_HP;
     this.cpuHealth = CPU_MAX_HP;
@@ -194,7 +200,7 @@ export class ChordFightGame extends EventTarget {
 
   _resolveCpuAttack() {
     if (this.currentAction === 'block') {
-      this._addFloater('Blocked!', 'player', '#5ad1a8');
+      this._addFloater(this.blockedLabel, 'player', '#5ad1a8');
       return;
     }
     const damage = Math.round(this.pendingCpuDamage);
@@ -227,8 +233,8 @@ export class ChordFightGame extends EventTarget {
     ctx.lineTo(canvas.width - 20, groundY + 4);
     ctx.stroke();
 
-    this._drawHealthBar(20, canvas.width / 2 - 30, this.playerHealth, PLAYER_MAX_HP, 'You', '#5ad1a8');
-    this._drawHealthBar(canvas.width / 2 + 10, canvas.width / 2 - 30, this.cpuHealth, CPU_MAX_HP, 'CPU', '#ff5c6c');
+    this._drawHealthBar(20, canvas.width / 2 - 30, this.playerHealth, PLAYER_MAX_HP, this.youLabel, '#5ad1a8');
+    this._drawHealthBar(canvas.width / 2 + 10, canvas.width / 2 - 30, this.cpuHealth, CPU_MAX_HP, this.cpuLabel, '#ff5c6c');
 
     this._drawStickFigure(playerX, groundY, {
       color: '#5ad1a8',

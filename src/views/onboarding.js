@@ -23,6 +23,7 @@ function markOnboarded() {
  * table stay Settings-only; they're maintenance tools, not a first-run need.
  */
 export function renderOnboarding(container, ctx) {
+  const { t } = ctx;
   let stepIndex = 0;
   let cleanupStep = null;
 
@@ -56,14 +57,11 @@ export function renderOnboarding(container, ctx) {
     if (step === 'welcome') {
       container.innerHTML = `
         <div class="card wizard-step" style="text-align:center">
-          <h2>👋 Welcome to Chord Games</h2>
-          <p class="hint">
-            A quick setup gets your guitar recognized reliably — connect your audio input and
-            capture a couple of chords. Two short steps, and you only do this once.
-          </p>
-          <button class="btn primary" id="ob-start">Let's go →</button>
+          <h2>👋 ${t('onboarding.welcomeTitle')}</h2>
+          <p class="hint">${t('onboarding.welcomeBody')}</p>
+          <button class="btn primary" id="ob-start">${t('onboarding.startBtn')}</button>
           <div style="margin-top:1rem">
-            <button class="btn" id="ob-skip-all">Skip setup, take me to the games</button>
+            <button class="btn" id="ob-skip-all">${t('onboarding.skipAllBtn')}</button>
           </div>
         </div>
       `;
@@ -76,15 +74,11 @@ export function renderOnboarding(container, ctx) {
       container.innerHTML = `
         <div class="card wizard-step">
           ${stepDots()}
-          <h2>Connect your audio</h2>
-          <p class="hint">
-            Pick your guitar's USB audio interface/pedal below — not your laptop's built-in mic.
-            This is optional: every game also has a keyboard fallback for testing without a
-            guitar, and you can always connect later from Settings.
-          </p>
+          <h2>${t('onboarding.audioTitle')}</h2>
+          <p class="hint">${t('onboarding.audioBody')}</p>
           <div id="ob-audio-controls"></div>
           <div class="row" style="justify-content:flex-end; margin-top:1.5rem">
-            <button class="btn primary" id="ob-next">Continue →</button>
+            <button class="btn primary" id="ob-next">${t('onboarding.continueBtn')}</button>
           </div>
         </div>
       `;
@@ -97,10 +91,10 @@ export function renderOnboarding(container, ctx) {
       container.innerHTML = `
         <div class="card wizard-step">
           ${stepDots()}
-          <h2>Calibrate your chords</h2>
+          <h2>${t('settings.calibrateTitle')}</h2>
           <div id="ob-calibrate-wizard"></div>
           <div class="row" style="justify-content:flex-end; margin-top:1.5rem">
-            <button class="btn" id="ob-skip-calibrate">Skip, I'll calibrate later</button>
+            <button class="btn" id="ob-skip-calibrate">${t('onboarding.skipCalibrateBtn')}</button>
           </div>
         </div>
       `;
@@ -115,9 +109,9 @@ export function renderOnboarding(container, ctx) {
     container.innerHTML = `
       <div class="card wizard-step" style="text-align:center">
         ${stepDots()}
-        <h2>🎸 You're all set!</h2>
-        <p class="hint">Head to the games and start playing. You can replay this guide anytime from Settings.</p>
-        <button class="btn primary" id="ob-finish">Continue to games →</button>
+        <h2>🎸 ${t('onboarding.doneTitle')}</h2>
+        <p class="hint">${t('onboarding.doneBody')}</p>
+        <button class="btn primary" id="ob-finish">${t('onboarding.finishBtn')}</button>
       </div>
     `;
     container.querySelector('#ob-finish').addEventListener('click', finish);
