@@ -659,6 +659,10 @@ canvas {
   box-shadow: 0 4px 0 #04262e, 0 0 14px var(--accent-3-glow);
 }
 
+.level-btn-empty:not(.active) {
+  opacity: 0.45;
+}
+
 .small {
   font-size: 0.95rem;
   color: var(--text-dim);

@@ -178,7 +178,7 @@ export function renderSnake(container, ctx) {
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'snake', score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'snake', level, score);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }
