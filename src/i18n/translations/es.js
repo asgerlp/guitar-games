@@ -17,6 +17,11 @@ export const es = {
   'home.pongDesc': 'Mantén un acorde para mover la pala a la izquierda, otro para la derecha — mantén la pelota en juego.',
   'home.runDesc': 'Salta troncos y agáchate bajo vigas con dos acordes. Mantén saltar para seguir saltando, mantén agacharse para deslizarte por debajo.',
   'home.snakeDesc': "Cuatro acordes controlan arriba/abajo/izquierda/derecha. Snake clásico — come comida, no choques contigo mismo ni con una pared.",
+  'home.stackDesc': 'Puzle clásico de bloques que caen. Desplaza, gira y suelta piezas con cuatro acordes — completa filas enteras para puntuar.',
+  'home.chompDesc': 'Recorre un laberinto comiendo puntos mientras los fantasmas te persiguen. Toma una píldora para invertir brevemente los papeles.',
+  'home.hopperDesc': 'Cruza el tráfico y un río de troncos con cuatro acordes. No hay fondo en el agua — móntate en un tronco o te hundes.',
+  'home.highwayDesc': 'Las notas caen por una autopista en 3D — mantén el acorde correcto justo cuando una nota cruza la línea para puntuar.',
+  'home.blocksDesc': 'Un sandbox de construcción voxel original. Camina, gira y salta con acordes; rompe y coloca bloques con el ratón.',
   'home.highScoresTitle': 'Puntuaciones máximas',
   'home.highScoresDesc': "Consulta el top 10 de cada juego. Si logras una partida en el top 10, te pedirán tu nombre.",
 
@@ -217,4 +222,66 @@ export const es = {
     'Controla la velocidad de movimiento de la serpiente. Cambiar de forma limpia entre cuatro acordes es más difícil que entre dos, así que empieza en Súper fácil o Fácil si es tu primera partida.',
   'snake.gameOverHint':
     'Chocaste con una pared o tu propia cola. Si cuatro acordes te parecen demasiados, baja el nivel de dificultad para tener más tiempo entre giros.',
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Puzle clásico de bloques que caen. Cuatro acordes controlan la pieza: muévela a izquierda o derecha, gírala, o mantén el cuarto para que caiga más rápido. Completa filas enteras para puntuar — cuantas más de golpe, mayor la bonificación.",
+  'stack.moveLeft': 'Mover izquierda',
+  'stack.moveRight': 'Mover derecha',
+  'stack.rotate': 'Girar',
+  'stack.softDrop': 'Caída rápida',
+  'stack.kbFallbackLabel': 'Activar alternativa de flechas (para probar sin guitarra)',
+  'stack.difficultyHint': 'Controla la velocidad de caída de las piezas, y cuánto más rápida la hace completar filas.',
+  'stack.gameOverHint': 'La pila llegó arriba del todo. Completar filas enteras la mantiene baja — no dejes que se acumulen huecos.',
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Recorre un laberinto comiendo puntos mientras los fantasmas te persiguen. Cuatro acordes te mueven arriba/abajo/izquierda/derecha — un giro queda en espera y se activa en cuanto llegas al siguiente cruce, así que no exige una sincronización perfecta. Toma una gran píldora pulsante para volver comestibles a los fantasmas brevemente.",
+  'chomp.up': 'Arriba',
+  'chomp.down': 'Abajo',
+  'chomp.left': 'Izquierda',
+  'chomp.right': 'Derecha',
+  'chomp.kbFallbackLabel': 'Activar alternativa de flechas (para probar sin guitarra)',
+  'chomp.difficultyHint': 'Controla la velocidad de los fantasmas y cuántos te persiguen, y cuánto dura una píldora haciéndolos comestibles.',
+  'chomp.gameOverHint': 'Atrapado por un fantasma sin vidas restantes, o el laberinto está limpio. Las píldoras te dan una ventana para dar la vuelta a la situación.',
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Cruza una carretera y un río para llegar a las plataformas del otro lado. Cuatro acordes te mueven arriba/abajo/izquierda/derecha, un salto cada vez. El tráfico es muerte instantánea — esquívalo. El río no tiene suelo, así que solo sobrevives montado en un tronco; quedarte en agua abierta, o salir flotando por cualquiera de los bordes mientras vas montado, termina la partida igual de rápido.",
+  'hopper.up': 'Arriba',
+  'hopper.down': 'Abajo',
+  'hopper.left': 'Izquierda',
+  'hopper.right': 'Derecha',
+  'hopper.kbFallbackLabel': 'Activar alternativa de flechas (para probar sin guitarra)',
+  'hopper.difficultyHint': 'Controla la velocidad del tráfico y los troncos, y su densidad.',
+  'hopper.gameOverHint': 'Atropellado por el tráfico, ahogado en el río, o aterrizaste entre las plataformas. Observa el carril antes de dar el salto.',
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Las notas caen por la autopista hacia ti, cada carril ligado a uno de tus acordes. A diferencia de los demás juegos de aquí, este quiere lo real: mantén el acorde correcto en el instante en que una nota cruza la línea de impacto. Un acierto limpio hace crecer tu combo; dejar pasar una cuesta salud. Salud a cero, o completar todo el set, termina la partida.",
+  'highway.lanesLabel': 'Carriles',
+  'highway.laneN': 'Carril {n}',
+  'highway.kbFallbackLabel': 'Activar alternativa de números (para probar sin guitarra)',
+  'highway.difficultyHint': 'Controla la velocidad de caída de las notas, su densidad, y cuánto te cuesta un fallo.',
+  'highway.comboHud': 'Combo:',
+  'highway.healthHud': 'Salud:',
+  'highway.gameOverHint': 'Demasiados fallos agotaron tu salud, o completaste todo el set. El combo crece rápido en cuanto encajas el ritmo.',
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "Un sandbox de construcción voxel original — recorre un pequeño mundo con colinas y construye con bloques de hierba, tierra, piedra, madera y hojas antes de que se acabe el tiempo. Tres acordes lo controlan al estilo tanque: Avanzar camina hacia donde miras, y los otros dos giran esa orientación a izquierda o derecha — sin necesidad de mirar con el ratón. Un cuarto acorde salta.",
+  'blocks.forward': 'Avanzar',
+  'blocks.turnLeft': 'Girar izquierda',
+  'blocks.turnRight': 'Girar derecha',
+  'blocks.jump': 'Saltar',
+  'blocks.kbFallbackLabel': 'Activar alternativa de flechas + espacio (para probar sin guitarra)',
+  'blocks.mouseHint': 'Clic izquierdo rompe el bloque al que miras; clic derecho coloca tu tipo de bloque seleccionado contra él.',
+  'blocks.difficultyHint': 'Controla cuánto dura tu sesión de construcción, y tu velocidad al caminar y girar.',
+  'blocks.timeHud': 'Tiempo:',
+  'blocks.type.grass': 'Hierba',
+  'blocks.type.dirt': 'Tierra',
+  'blocks.type.stone': 'Piedra',
+  'blocks.type.wood': 'Madera',
+  'blocks.type.leaves': 'Hojas',
+  'blocks.gameOverHint': 'Se acabó el tiempo. La puntuación es el total de bloques colocados en esta sesión.',
 };

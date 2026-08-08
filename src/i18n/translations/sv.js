@@ -17,6 +17,11 @@ export const sv = {
   'home.pongDesc': 'Håll ett ackord för att flytta racketen åt vänster, ett annat för höger — håll bollen i spel.',
   'home.runDesc': 'Hoppa över stockar och ducka under bjälkar med två ackord. Håll hoppa för att fortsätta hoppa, håll ducka för att glida under.',
   'home.snakeDesc': "Fyra ackord styr upp/ner/vänster/höger. Klassisk orm — ät mat, krocka inte med dig själv eller en vägg.",
+  'home.stackDesc': 'Klassiskt fallande-klossar-pussel. Flytta, rotera och släpp klossar med fyra ackord — rensa hela rader för poäng.',
+  'home.chompDesc': 'Styr genom en labyrint och ät prickar medan spöken jagar dig. Ta en pulserande pastill för att kortvarigt vända på steken.',
+  'home.hopperDesc': 'Ta dig över trafik och en flod av stockar med fyra ackord. Inget golv i vattnet — rid på en stock eller drunkna.',
+  'home.highwayDesc': 'Toner faller ner en 3D-motorväg — håll rätt ackord i det ögonblick en ton korsar linjen för att poängsätta.',
+  'home.blocksDesc': 'En original voxel-byggsandlåda. Gå, sväng och hoppa med ackord; slå sönder och placera klossar med musen.',
   'home.highScoresTitle': 'Topplistor',
   'home.highScoresDesc': "Se topp 10 för varje spel. Klarar du en topp-10-omgång blir du ombedd att ange ditt namn.",
 
@@ -217,4 +222,66 @@ export const sv = {
     'Styr hur snabbt ormen rör sig. Att byta rent mellan fyra ackord är svårare än två, så börja på Superlätt eller Lätt om det här är din första omgång.',
   'snake.gameOverHint':
     'Träffade en vägg eller din egen svans. Om fyra ackord känns som mycket, gå ner en svårighetsgrad för mer tid mellan svängarna.',
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Klassiskt fallande-klossar-pussel. Fyra ackord styr klossen: flytta den åt vänster eller höger, rotera den, eller håll den fjärde för att få den att falla snabbare. Rensa hela rader för att poängsätta — ju fler på en gång, desto större bonus.",
+  'stack.moveLeft': 'Flytta vänster',
+  'stack.moveRight': 'Flytta höger',
+  'stack.rotate': 'Rotera',
+  'stack.softDrop': 'Snabbfall',
+  'stack.kbFallbackLabel': 'Aktivera piltangentslösning (för att testa utan gitarr)',
+  'stack.difficultyHint': 'Styr hur snabbt klossar faller, och hur mycket snabbare rensade rader gör dem.',
+  'stack.gameOverHint': 'Högen nådde toppen. Att rensa hela rader håller den låg — låt inte luckor hopa sig.',
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Styr genom en labyrint och ät prickar medan spöken jagar dig. Fyra ackord flyttar dig upp/ner/vänster/höger — en sväng köas och träder i kraft så snart du når nästa korsning, så det kräver ingen bildperfekt timing. Ta en stor pulserande pastill för att kortvarigt göra spökena ätbara.",
+  'chomp.up': 'Upp',
+  'chomp.down': 'Ner',
+  'chomp.left': 'Vänster',
+  'chomp.right': 'Höger',
+  'chomp.kbFallbackLabel': 'Aktivera piltangentslösning (för att testa utan gitarr)',
+  'chomp.difficultyHint': 'Styr spökenas fart och hur många som jagar dig, samt hur länge en pastill gör dem ätbara.',
+  'chomp.gameOverHint': 'Fångad av ett spöke utan liv kvar, eller labyrinten är tom. Kraftpastiller ger dig ett fönster att vända på steken.',
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Ta dig över en väg och en flod för att nå plattorna på andra sidan. Fyra ackord flyttar dig upp/ner/vänster/höger, ett hopp i taget. Trafik är omedelbar död — undvik den. Floden har inget golv, så du överlever bara genom att rida på en stock; att stå i öppet vatten, eller driva av vid någon av kanterna medan du rider, avslutar omgången lika snabbt.",
+  'hopper.up': 'Upp',
+  'hopper.down': 'Ner',
+  'hopper.left': 'Vänster',
+  'hopper.right': 'Höger',
+  'hopper.kbFallbackLabel': 'Aktivera piltangentslösning (för att testa utan gitarr)',
+  'hopper.difficultyHint': 'Styr hur snabbt trafik och stockar rör sig, och hur tätt packade de är.',
+  'hopper.gameOverHint': 'Träffad av trafik, drunknad i floden, eller landade mellan plattorna. Studera filen innan du gör hoppet.',
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Toner faller ner motorvägen mot dig, varje fil kopplad till ett av dina ackord. Till skillnad från de andra spelen här vill det här ha den riktiga varan: håll rätt ackord i det ögonblick en ton korsar trefflinjen. En ren träff bygger din combo; att låta en passera kostar hälsa. Hälsa på noll, eller att du spelar igenom hela setet, avslutar omgången.",
+  'highway.lanesLabel': 'Filer',
+  'highway.laneN': 'Fil {n}',
+  'highway.kbFallbackLabel': 'Aktivera sifferlösning (för att testa utan gitarr)',
+  'highway.difficultyHint': 'Styr hur snabbt toner faller, hur tätt packade de är, och hur mycket ett missat kostar dig.',
+  'highway.comboHud': 'Combo:',
+  'highway.healthHud': 'Hälsa:',
+  'highway.gameOverHint': 'För många missar tömde din hälsa, eller så spelade du igenom hela setet. Combon byggs upp snabbt när timingen klaffar.',
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "En original voxel-byggsandlåda — gå runt i en liten kuperad värld och bygg med gräs-, jord-, sten-, trä- och lövklossar innan tiden tar slut. Tre ackord styr den stridsvagnsstil: Framåt går den väg du vänder dig, och de andra två svänger den riktningen vänster eller höger — ingen musblick behövs. Ett fjärde ackord hoppar.",
+  'blocks.forward': 'Framåt',
+  'blocks.turnLeft': 'Sväng vänster',
+  'blocks.turnRight': 'Sväng höger',
+  'blocks.jump': 'Hoppa',
+  'blocks.kbFallbackLabel': 'Aktivera piltangents- och mellanslagslösning (för att testa utan gitarr)',
+  'blocks.mouseHint': 'Vänsterklick slår sönder klossen du vänder dig mot; högerklick placerar din valda klosstyp mot den.',
+  'blocks.difficultyHint': 'Styr hur länge din byggsession varar, och hur snabbt du går och svänger.',
+  'blocks.timeHud': 'Tid:',
+  'blocks.type.grass': 'Gräs',
+  'blocks.type.dirt': 'Jord',
+  'blocks.type.stone': 'Sten',
+  'blocks.type.wood': 'Trä',
+  'blocks.type.leaves': 'Löv',
+  'blocks.gameOverHint': 'Tiden är slut. Poäng är totalt antal klossar placerade denna session.',
 };

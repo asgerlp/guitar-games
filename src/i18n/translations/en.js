@@ -19,6 +19,11 @@ export const en = {
   'home.pongDesc': 'Hold one chord to slide the paddle left, another to slide right — keep the ball in play.',
   'home.runDesc': 'Jump logs and duck beams with two chords. Hold jump to keep hopping, hold duck to slide under.',
   'home.snakeDesc': "Four chords steer up/down/left/right. Classic snake — eat food, don't hit yourself or a wall.",
+  'home.stackDesc': 'Classic falling-block puzzle. Shift, rotate, and drop pieces with four chords — clear full rows to score.',
+  'home.chompDesc': 'Steer a maze eating dots while ghosts hunt you. Grab a pellet to briefly turn the tables.',
+  'home.hopperDesc': 'Hop across traffic and a river of logs with four chords. No floor in the water — ride a log or drown.',
+  'home.highwayDesc': 'Notes fall down a 3D highway — hold the right chord the instant one crosses the line to score.',
+  'home.blocksDesc': 'An original voxel-building sandbox. Walk, turn, and jump with chords; break and place blocks with the mouse.',
   'home.highScoresTitle': 'High Scores',
   'home.highScoresDesc': "See the top 10 for each game. Land a top-10 run and you'll be asked for your name.",
 
@@ -219,4 +224,66 @@ export const en = {
     'Controls how fast the snake moves. Switching cleanly between four chords is harder than two, so start at Super Easy or Easy if this is your first run.',
   'snake.gameOverHint':
     'Hit a wall or your own tail. If four chords feel like a lot, drop down a difficulty level for more time between turns.',
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Classic falling-block puzzle. Four chords steer the piece: shift it left or right, rotate it, or hold the fourth to drop it faster. Clear full rows to score — the more rows at once, the bigger the bonus.",
+  'stack.moveLeft': 'Move Left',
+  'stack.moveRight': 'Move Right',
+  'stack.rotate': 'Rotate',
+  'stack.softDrop': 'Soft Drop',
+  'stack.kbFallbackLabel': 'Enable arrow-key fallback (for testing without a guitar)',
+  'stack.difficultyHint': 'Controls how fast pieces fall, and how much faster clearing rows makes them fall.',
+  'stack.gameOverHint': 'The stack reached the top. Clearing full rows keeps it low — don\'t let gaps pile up.',
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Steer through a maze eating dots while ghosts hunt you. Four chords move you up/down/left/right — a turn queues up and takes effect the moment you reach the next intersection, so it doesn't need frame-perfect timing. Grab a big pulsing pellet to briefly turn the ghosts edible.",
+  'chomp.up': 'Up',
+  'chomp.down': 'Down',
+  'chomp.left': 'Left',
+  'chomp.right': 'Right',
+  'chomp.kbFallbackLabel': 'Enable arrow-key fallback (for testing without a guitar)',
+  'chomp.difficultyHint': 'Controls ghost speed and how many ghosts are hunting you, and how long a pellet keeps them edible.',
+  'chomp.gameOverHint': 'Caught by a ghost with no lives left, or the maze is clean. Power pellets buy you a window to turn the tables.',
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Hop across a road and a river to reach the pads on the far side. Four chords move you up/down/left/right one hop at a time. Traffic is instant death — dodge it. The river has no floor, so you only survive by riding a log; standing on open water, or drifting off either edge while riding one, ends the run just as fast.",
+  'hopper.up': 'Up',
+  'hopper.down': 'Down',
+  'hopper.left': 'Left',
+  'hopper.right': 'Right',
+  'hopper.kbFallbackLabel': 'Enable arrow-key fallback (for testing without a guitar)',
+  'hopper.difficultyHint': 'Controls how fast traffic and logs move, and how densely packed they are.',
+  'hopper.gameOverHint': 'Hit by traffic, drowned in the river, or landed between the pads. Watch the lane before you commit to the hop.',
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Notes fall down the highway toward you, each lane tied to one of your chords. Unlike the other games here, this one wants the real thing: be holding the right chord the instant a note crosses the hit line. A clean hit builds your combo; letting one pass costs health. Health hits zero, or you clear the set, and the run ends.",
+  'highway.lanesLabel': 'Lanes',
+  'highway.laneN': 'Lane {n}',
+  'highway.kbFallbackLabel': 'Enable number-key fallback (for testing without a guitar)',
+  'highway.difficultyHint': 'Controls how fast notes fall, how densely packed they are, and how much a miss costs you.',
+  'highway.comboHud': 'Combo:',
+  'highway.healthHud': 'Health:',
+  'highway.gameOverHint': 'Too many misses drained your health, or you played through the whole set. Combo builds fast once the timing clicks.',
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "An original voxel-building sandbox — walk a small hilly world and build with grass, dirt, stone, wood, and leaf blocks before the timer runs out. Three chords steer it tank-style: Forward walks the way you're facing, and the other two turn that facing left or right — no mouse-look needed. A fourth chord jumps.",
+  'blocks.forward': 'Forward',
+  'blocks.turnLeft': 'Turn Left',
+  'blocks.turnRight': 'Turn Right',
+  'blocks.jump': 'Jump',
+  'blocks.kbFallbackLabel': 'Enable arrow-key + space fallback (for testing without a guitar)',
+  'blocks.mouseHint': 'Left-click breaks the block you\'re facing; right-click places your selected block type against it.',
+  'blocks.difficultyHint': 'Controls how long your building session lasts, and how quickly you walk and turn.',
+  'blocks.timeHud': 'Time:',
+  'blocks.type.grass': 'Grass',
+  'blocks.type.dirt': 'Dirt',
+  'blocks.type.stone': 'Stone',
+  'blocks.type.wood': 'Wood',
+  'blocks.type.leaves': 'Leaves',
+  'blocks.gameOverHint': 'Time\'s up. Score is total blocks placed this session.',
 };

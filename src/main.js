@@ -13,6 +13,11 @@ import { renderFlap } from './views/flapSetup.js';
 import { renderPong } from './views/pongSetup.js';
 import { renderRun } from './views/runSetup.js';
 import { renderSnake } from './views/snakeSetup.js';
+import { renderStack } from './views/stackSetup.js';
+import { renderChomp } from './views/chompSetup.js';
+import { renderHopper } from './views/hopperSetup.js';
+import { renderHighway } from './views/highwaySetup.js';
+import { renderBlocks } from './views/blocksSetup.js';
 
 const audio = new AudioInputManager();
 const store = new ChordStore();
@@ -37,6 +42,11 @@ const VIEWS = {
   pong: { render: renderPong },
   run: { render: renderRun },
   snake: { render: renderSnake },
+  stack: { render: renderStack },
+  chomp: { render: renderChomp },
+  hopper: { render: renderHopper },
+  highway: { render: renderHighway },
+  blocks: { render: renderBlocks },
   scores: { render: renderHighScores },
 };
 
