@@ -1,6 +1,7 @@
-import { renderChordDiagram } from '../chords/chordDiagram.js';
 import { MATCH_THRESHOLD } from '../chords/audioChordDetector.js';
 import { renderLibrary } from './library.js';
+import { renderAudioControls } from './audioControls.js';
+import { renderCalibrationWizard } from './calibrationWizard.js';
 
 const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
@@ -8,11 +9,12 @@ const NOTE_LABELS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#',
  * The single Settings page: audio input, live chord monitor, the guided
  * calibration wizard, one-off recalibration, and the chord library — all
  * merged here since they're really one workflow (get your instrument
- * recognized reliably), not separate destinations.
+ * recognized reliably), not separate destinations. Unlike the onboarding
+ * wizard, this shows everything at once — appropriate for a returning
+ * player who wants to tweak one thing, not a guided first-time flow.
  */
 export function renderSettings(container, ctx, { showReplayWizard = true } = {}) {
   const { audio, audioDetector, store, navigate } = ctx;
-  let wizardIndex = 0;
 
   container.innerHTML = `
     <div class="card">
@@ -31,8 +33,7 @@ export function renderSettings(container, ctx, { showReplayWizard = true } = {})
     </div>
     <div class="card">
       <h2>Audio Input</h2>
-      ${!audio.isSupported ? '<p class="banner">This browser doesn’t support audio input capture. Use Chrome or Edge.</p>' : ''}
-      <div class="row" id="audio-controls"></div>
+      <div id="audio-controls"></div>
     </div>
     <div class="card">
       <h2>Live monitor</h2>
@@ -54,115 +55,21 @@ export function renderSettings(container, ctx, { showReplayWizard = true } = {})
       <p class="small" id="match-status"></p>
       <p class="small" id="level-readout">Level: —</p>
     </div>
-    <div class="card" id="wizard-panel"></div>
+    <div class="card">
+      <h2>Calibrate your chords</h2>
+      <div id="wizard-host"></div>
+    </div>
     <div class="card" id="calibrate-panel"></div>
     <div class="card" id="library-host"></div>
   `;
 
-  const controls = container.querySelector('#audio-controls');
   const fills = [...container.querySelectorAll('[data-fill]')];
   const liveChord = container.querySelector('#live-chord');
   const matchStatus = container.querySelector('#match-status');
   const levelReadout = container.querySelector('#level-readout');
-  const wizardPanel = container.querySelector('#wizard-panel');
   const calibratePanel = container.querySelector('#calibrate-panel');
 
   container.querySelector('#replay-wizard-btn')?.addEventListener('click', () => navigate('onboarding'));
-
-  function renderControls() {
-    if (!audio.currentDeviceId) {
-      controls.innerHTML = `<button class="btn primary" id="enable-btn" ${audio.isSupported ? '' : 'disabled'}>Enable audio input</button>`;
-      controls.querySelector('#enable-btn').addEventListener('click', async (e) => {
-        e.target.disabled = true;
-        e.target.textContent = 'Requesting permission…';
-        try {
-          const remembered = localStorage.getItem('guitarGames.audioDeviceId') || undefined;
-          await audio.selectInput(remembered);
-        } catch (err) {
-          controls.innerHTML = `<p class="banner">Couldn't access audio input: ${err.message}. Check the browser's site permissions (padlock icon in the address bar).</p>`;
-        }
-      });
-      return;
-    }
-
-    const inputs = audio.listInputs();
-    controls.innerHTML = `
-      <select id="audio-device-select">
-        ${inputs
-          .map(
-            (i) =>
-              `<option value="${i.id}" ${i.id === audio.currentDeviceId ? 'selected' : ''}>${i.name}</option>`
-          )
-          .join('')}
-      </select>
-      <button class="btn" id="disconnect-btn">Disconnect</button>
-    `;
-    controls.querySelector('#audio-device-select').addEventListener('change', (e) => {
-      audio.selectInput(e.target.value);
-    });
-    controls.querySelector('#disconnect-btn').addEventListener('click', () => audio.stop());
-  }
-
-  // --- guided calibration wizard: walk through the chords you actually
-  // have enabled, one at a time, capturing each one's live sound. This is
-  // the recommended first-run flow, since defaults derived from theoretical
-  // note lists rarely cosine-match real guitar audio closely enough on
-  // their own. ------------------------------------------------------------
-  function renderWizard() {
-    const chords = store.enabled();
-    const hasInput = !!audio.currentDeviceId;
-
-    if (chords.length === 0) {
-      wizardPanel.innerHTML = `
-        <h2>Calibrate your chords</h2>
-        <p class="hint">Enable some chords in the Chord Library below first, then come back here.</p>
-      `;
-      return;
-    }
-
-    if (wizardIndex >= chords.length) {
-      wizardPanel.innerHTML = `
-        <h2>Calibrate your chords</h2>
-        <p class="hint">All ${chords.length} enabled chords calibrated. Head to the Home screen to play, or restart to redo them.</p>
-        <button class="btn" id="wizard-restart">Restart calibration</button>
-      `;
-      wizardPanel.querySelector('#wizard-restart').addEventListener('click', () => {
-        wizardIndex = 0;
-        renderWizard();
-      });
-      return;
-    }
-
-    const chord = chords[wizardIndex];
-    wizardPanel.innerHTML = `
-      <h2>Calibrate your chords</h2>
-      <p class="hint">
-        Walk through each chord you use and capture its real sound — this matters more than
-        anything else here, since it's what actually drives recognition.
-      </p>
-      <p class="small">Chord ${wizardIndex + 1} of ${chords.length}</p>
-      <div class="row" style="align-items:center; gap:1.25rem">
-        <div class="detected-chord">${chord.name}</div>
-        ${chord.frets ? renderChordDiagram(chord.frets) : ''}
-      </div>
-      <p class="hint">Strum and hold ${chord.name}, then capture.</p>
-      <div class="row">
-        <button class="btn primary" id="wizard-capture" ${hasInput ? '' : 'disabled'}>Capture ${chord.name}</button>
-        <button class="btn" id="wizard-skip">Skip</button>
-      </div>
-      ${!hasInput ? '<p class="small" style="margin-top:0.5rem">Enable audio input above first.</p>' : ''}
-    `;
-
-    wizardPanel.querySelector('#wizard-capture').addEventListener('click', () => {
-      store.upsert({ id: chord.id, name: chord.name, source: chord.source, chroma: audioDetector.getSmoothedChroma() });
-      wizardIndex++;
-      renderWizard();
-    });
-    wizardPanel.querySelector('#wizard-skip').addEventListener('click', () => {
-      wizardIndex++;
-      renderWizard();
-    });
-  }
 
   function renderCalibratePanel() {
     const chords = store.list();
@@ -235,31 +142,23 @@ export function renderSettings(container, ctx, { showReplayWizard = true } = {})
     renderCalibratePanel();
   }
 
-  audio.addEventListener('connected', renderControls);
-  audio.addEventListener('disconnected', renderControls);
-  audio.addEventListener('deviceschanged', renderControls);
-  audio.addEventListener('connected', renderWizard);
-  audio.addEventListener('disconnected', renderWizard);
   audio.addEventListener('connected', renderCalibratePanel);
   audio.addEventListener('disconnected', renderCalibratePanel);
   audio.addEventListener('chroma', onChroma);
   store.addEventListener('change', onStoreChange);
 
-  renderControls();
-  renderWizard();
+  const cleanupAudioControls = renderAudioControls(container.querySelector('#audio-controls'), ctx);
+  const cleanupWizard = renderCalibrationWizard(container.querySelector('#wizard-host'), ctx);
   renderCalibratePanel();
   const cleanupLibrary = renderLibrary(container.querySelector('#library-host'), ctx);
 
   return () => {
-    audio.removeEventListener('connected', renderControls);
-    audio.removeEventListener('disconnected', renderControls);
-    audio.removeEventListener('connected', renderWizard);
-    audio.removeEventListener('disconnected', renderWizard);
     audio.removeEventListener('connected', renderCalibratePanel);
     audio.removeEventListener('disconnected', renderCalibratePanel);
-    audio.removeEventListener('deviceschanged', renderControls);
     audio.removeEventListener('chroma', onChroma);
     store.removeEventListener('change', onStoreChange);
+    cleanupAudioControls?.();
+    cleanupWizard?.();
     cleanupLibrary?.();
   };
 }
