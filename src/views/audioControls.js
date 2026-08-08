@@ -5,24 +5,24 @@
  * both the Settings page and the onboarding wizard's audio step.
  */
 export function renderAudioControls(hostEl, ctx) {
-  const { audio } = ctx;
+  const { audio, t } = ctx;
 
   function render() {
     if (!audio.isSupported) {
-      hostEl.innerHTML = '<p class="banner">This browser doesn’t support audio input capture. Use Chrome or Edge.</p>';
+      hostEl.innerHTML = `<p class="banner">${t('audio.unsupported')}</p>`;
       return;
     }
 
     if (!audio.currentDeviceId) {
-      hostEl.innerHTML = `<button class="btn primary" id="enable-btn">Enable audio input</button>`;
+      hostEl.innerHTML = `<button class="btn primary" id="enable-btn">${t('audio.enableBtn')}</button>`;
       hostEl.querySelector('#enable-btn').addEventListener('click', async (e) => {
         e.target.disabled = true;
-        e.target.textContent = 'Requesting permission…';
+        e.target.textContent = t('audio.requestingPermission');
         try {
           const remembered = localStorage.getItem('guitarGames.audioDeviceId') || undefined;
           await audio.selectInput(remembered);
         } catch (err) {
-          hostEl.innerHTML = `<p class="banner">Couldn't access audio input: ${err.message}. Check the browser's site permissions (padlock icon in the address bar).</p>`;
+          hostEl.innerHTML = `<p class="banner">${t('audio.couldNotAccess', { message: err.message })}</p>`;
         }
       });
       return;
@@ -39,7 +39,7 @@ export function renderAudioControls(hostEl, ctx) {
             )
             .join('')}
         </select>
-        <button class="btn" id="disconnect-btn">Disconnect</button>
+        <button class="btn" id="disconnect-btn">${t('audio.disconnectBtn')}</button>
       </div>
     `;
     hostEl.querySelector('#audio-device-select').addEventListener('change', (e) => {

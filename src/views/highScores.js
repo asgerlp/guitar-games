@@ -2,7 +2,9 @@ import { getHighScores, highScoreTableHTML, levelsWithScores, GAME_LABELS } from
 import { renderLevelPicker } from './levelPicker.js';
 import { DEFAULT_LEVEL } from '../games/difficultyLevels.js';
 
-export function renderHighScores(container) {
+export function renderHighScores(container, ctx) {
+  const { t } = ctx;
+
   // Each game defaults to whichever level it already has scores on (the
   // highest one played so far), falling back to the app-wide default so a
   // never-played game still shows a sensible tab.
@@ -14,8 +16,8 @@ export function renderHighScores(container) {
 
   container.innerHTML = `
     <div class="card">
-      <h2>🏆 High Scores</h2>
-      <p class="hint">Top 10 for each game, tracked separately per difficulty level, saved on this device.</p>
+      <h2>🏆 ${t('highScores.title')}</h2>
+      <p class="hint">${t('highScores.subtitle')}</p>
     </div>
     ${Object.keys(GAME_LABELS)
       .map(
@@ -36,12 +38,13 @@ export function renderHighScores(container) {
     const withScores = new Set(levelsWithScores(gameId));
 
     function renderTable() {
-      tableEl.innerHTML = highScoreTableHTML(getHighScores(gameId, viewLevel[gameId]));
+      tableEl.innerHTML = highScoreTableHTML(getHighScores(gameId, viewLevel[gameId]), t);
     }
 
     function renderPicker() {
       renderLevelPicker(pickerEl, {
         value: viewLevel[gameId],
+        t,
         onChange: (level) => {
           viewLevel[gameId] = level;
           renderTable();

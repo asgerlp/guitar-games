@@ -56,10 +56,10 @@ export function qualifiesForHighScore(gameId, level, score) {
 }
 
 /** Record a new score at this level, keeping only the top 10, sorted highest first. */
-export function addHighScore(gameId, level, name, score) {
+export function addHighScore(gameId, level, name, score, t) {
   const all = loadAll();
   const buckets = levelBuckets(all[gameId]);
-  const entry = { name: name.trim().slice(0, 20) || 'Anonymous', score, date: new Date().toISOString() };
+  const entry = { name: name.trim().slice(0, 20) || t('highScores.anonymous'), score, date: new Date().toISOString() };
   const scores = Array.isArray(buckets[level]) ? buckets[level] : [];
   buckets[level] = [...scores, entry].sort((a, b) => b.score - a.score).slice(0, MAX_ENTRIES);
   all[gameId] = buckets;
@@ -72,12 +72,12 @@ function escapeHtml(str) {
 }
 
 /** Renders a top-10 table, or an empty-state message if there are no scores yet. */
-export function highScoreTableHTML(entries) {
-  if (entries.length === 0) return '<p class="hint">No high scores yet — be the first!</p>';
+export function highScoreTableHTML(entries, t) {
+  if (entries.length === 0) return `<p class="hint">${t('highScores.empty')}</p>`;
   return `
     <table>
       <thead>
-        <tr><th>#</th><th>Name</th><th>Score</th></tr>
+        <tr><th>${t('highScores.colRank')}</th><th>${t('highScores.colName')}</th><th>${t('highScores.colScore')}</th></tr>
       </thead>
       <tbody>
         ${entries
@@ -94,14 +94,14 @@ export function highScoreTableHTML(entries) {
  * doesn't qualify for that level's top 10, leaves it empty. After saving,
  * swaps to a confirmation plus that level's updated leaderboard.
  */
-export function renderHighScoreSection(hostEl, gameId, level, score) {
+export function renderHighScoreSection(hostEl, gameId, level, score, t) {
   let saved = false;
 
   function paint() {
     if (saved) {
       hostEl.innerHTML = `
-        <p class="hint">Saved to the ${levelLabel(level)} leaderboard!</p>
-        ${highScoreTableHTML(getHighScores(gameId, level))}
+        <p class="hint">${t('highScores.savedTo', { level: levelLabel(level, t) })}</p>
+        ${highScoreTableHTML(getHighScores(gameId, level), t)}
       `;
       return;
     }
@@ -112,16 +112,16 @@ export function renderHighScoreSection(hostEl, gameId, level, score) {
     }
 
     hostEl.innerHTML = `
-      <p class="hint">🏆 New ${levelLabel(level)} high score! Enter your name for the leaderboard:</p>
+      <p class="hint">🏆 ${t('highScores.newHighScore', { level: levelLabel(level, t) })}</p>
       <div class="row" style="justify-content:center">
-        <input type="text" id="hs-name" maxlength="20" placeholder="Your name" />
-        <button class="btn primary" id="hs-save">Save</button>
+        <input type="text" id="hs-name" maxlength="20" placeholder="${t('highScores.namePlaceholder')}" />
+        <button class="btn primary" id="hs-save">${t('highScores.saveBtn')}</button>
       </div>
     `;
 
     const nameInput = hostEl.querySelector('#hs-name');
     const submit = () => {
-      addHighScore(gameId, level, nameInput.value, score);
+      addHighScore(gameId, level, nameInput.value, score, t);
       saved = true;
       paint();
     };

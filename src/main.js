@@ -2,6 +2,7 @@ import './style.css';
 import { AudioInputManager } from './audio/audioInputManager.js';
 import { AudioChordDetector } from './chords/audioChordDetector.js';
 import { ChordStore } from './chords/chordStore.js';
+import { i18n } from './i18n/i18n.js';
 import { renderHome } from './views/home.js';
 import { renderSettings } from './views/settings.js';
 import { renderOnboarding, hasOnboarded } from './views/onboarding.js';
@@ -39,14 +40,14 @@ const VIEWS = {
   scores: { render: renderHighScores },
 };
 
-const NAV_ITEMS = [{ key: 'settings', label: 'Settings' }];
+const NAV_ITEMS = [{ key: 'settings', labelKey: 'nav.settings' }];
 
 const app = document.querySelector('#app');
 app.innerHTML = `
   <header class="topbar">
     <button class="brand-home" id="brand-home" type="button">🎸 <span class="pick">Chord</span> Games</button>
     <div class="status-cluster">
-      <span id="input-status"><span class="dot"></span>Input: checking…</span>
+      <span id="input-status"><span class="dot"></span></span>
       <span id="chord-badge" class="chord-badge">—</span>
     </div>
   </header>
@@ -71,12 +72,14 @@ function navigate(view, params) {
   currentCleanup = VIEWS[view].render(mainEl, ctx, params) || null;
 }
 
-const ctx = { audio, store, detector, audioDetector: detector, navigate };
+const t = (key, vars) => i18n.t(key, vars);
+const ctx = { audio, store, detector, audioDetector: detector, navigate, i18n, t };
 
-for (const { key, label } of NAV_ITEMS) {
+for (const { key, labelKey } of NAV_ITEMS) {
   const btn = document.createElement('button');
-  btn.textContent = label;
+  btn.textContent = t(labelKey);
   btn.dataset.view = key;
+  btn.dataset.labelKey = labelKey;
   btn.addEventListener('click', () => navigate(key));
   tabsEl.appendChild(btn);
 }
@@ -84,19 +87,31 @@ for (const { key, label } of NAV_ITEMS) {
 brandHomeEl.addEventListener('click', () => navigate('home'));
 
 function setInputStatus(ok, text) {
-  inputStatusEl.innerHTML = `<span class="dot ${ok ? 'ok' : ''}"></span>Input: ${text}`;
+  inputStatusEl.innerHTML = `<span class="dot ${ok ? 'ok' : ''}"></span>${text}`;
 }
 
 function updateInputStatus() {
   if (audio.currentDeviceId) {
-    setInputStatus(true, `Audio — ${audio.currentDeviceLabel}`);
+    setInputStatus(true, t('topbar.inputConnected', { device: audio.currentDeviceLabel }));
   } else {
-    setInputStatus(false, audio.isSupported ? 'not connected' : 'unsupported in this browser');
+    setInputStatus(false, audio.isSupported ? t('topbar.inputNotConnected') : t('topbar.inputUnsupported'));
   }
 }
 
 audio.addEventListener('connected', updateInputStatus);
 audio.addEventListener('disconnected', updateInputStatus);
+
+// Language changes only touch the topbar chrome here — the current view
+// (which might be a game in progress) re-renders itself if it needs to,
+// via its own i18n.addEventListener wiring. Settings is the only place
+// the language can actually be changed from, and re-rendering itself is
+// enough there, so nothing mid-gameplay is ever interrupted by this.
+i18n.addEventListener('change', () => {
+  tabsEl.querySelectorAll('button[data-label-key]').forEach((btn) => {
+    btn.textContent = t(btn.dataset.labelKey);
+  });
+  updateInputStatus();
+});
 
 detector.addEventListener('chordchange', (e) => {
   const match = e.detail;

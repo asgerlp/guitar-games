@@ -6,16 +6,19 @@ import { renderLevelPicker } from './levelPicker.js';
 import { DEFAULT_LEVEL } from '../games/difficultyLevels.js';
 
 const SETTINGS_KEY = 'guitarGames.snakeSetup';
-const SLOT_LABELS = ['Up', 'Down', 'Left', 'Right'];
 
 export function renderSnake(container, ctx) {
-  const { store, audio, detector } = ctx;
+  const { store, audio, detector, t } = ctx;
   const saved = loadJSON(SETTINGS_KEY, {});
 
   let chordIds = [];
   let keyboardFallback = saved.keyboardFallback ?? false;
   let level = saved.level ?? DEFAULT_LEVEL;
   let game = null;
+
+  function slotLabels() {
+    return [t('snake.up'), t('snake.down'), t('snake.left'), t('snake.right')];
+  }
 
   function defaultAssignment() {
     const enabled = store.enabled();
@@ -40,42 +43,27 @@ export function renderSnake(container, ctx) {
     container.innerHTML = `
       <div class="card">
         <h2>🐍 Chord Snake</h2>
-        <p class="hint">
-          Classic grid snake — four chords steer Up/Down/Left/Right. You can't turn straight back
-          into your own body, so a mistaken chord match just gets ignored rather than ending the
-          run outright. Eating food grows the snake and speeds the game up a little each time.
-        </p>
-        ${
-          !audio.currentDeviceId
-            ? '<p class="banner">No audio input connected. Connect your guitar/pedal under "Settings", or enable keyboard fallback below to test.</p>'
-            : ''
-        }
-        ${
-          enabled.length < 4
-            ? '<p class="banner">Enable at least 4 chords in Settings to play.</p>'
-            : ''
-        }
+        <p class="hint">${t('snake.description')}</p>
+        ${!audio.currentDeviceId ? `<p class="banner">${t('common.noAudioBanner')}</p>` : ''}
+        ${enabled.length < 4 ? `<p class="banner">${t('common.enableChordsBanner', { count: 4 })}</p>` : ''}
         <div class="lane-pick" id="chord-pick"></div>
         <label class="checkbox-row" style="margin-top:1rem">
           <input type="checkbox" id="kb-fallback" ${keyboardFallback ? 'checked' : ''} />
-          <span class="small">Enable arrow-key fallback (for testing without a guitar)</span>
+          <span class="small">${t('snake.kbFallbackLabel')}</span>
         </label>
         <div style="margin-top:1.25rem">
-          <button class="btn primary" id="start-btn" ${enabled.length < 4 ? 'disabled' : ''}>Start</button>
+          <button class="btn primary" id="start-btn" ${enabled.length < 4 ? 'disabled' : ''}>${t('common.startBtn')}</button>
         </div>
       </div>
       <div class="card">
-        <h2>Difficulty</h2>
-        <p class="hint">
-          Controls how fast the snake moves. Switching cleanly between four chords is harder than
-          two, so start at Super Easy or Easy if this is your first run.
-        </p>
+        <h2>${t('common.difficultyTitle')}</h2>
+        <p class="hint">${t('snake.difficultyHint')}</p>
         <div class="level-picker" id="level-picker"></div>
       </div>
     `;
 
     const chordPick = container.querySelector('#chord-pick');
-    chordPick.innerHTML = SLOT_LABELS.map(
+    chordPick.innerHTML = slotLabels().map(
       (label, i) => `
         <div class="lane-slot">
           <label>${label}</label>
@@ -92,10 +80,10 @@ export function renderSnake(container, ctx) {
     function renderDiagram(i) {
       const chord = store.get(chordIds[i]);
       const holder = chordPick.querySelector(`[data-diagram="${i}"]`);
-      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : '<span class="small">no diagram</span>';
+      holder.innerHTML = chord?.frets ? renderChordDiagram(chord.frets) : `<span class="small">${t('common.noDiagram')}</span>`;
     }
 
-    SLOT_LABELS.forEach((_, i) => renderDiagram(i));
+    slotLabels().forEach((_, i) => renderDiagram(i));
 
     chordPick.querySelectorAll('select[data-slot]').forEach((sel) => {
       sel.addEventListener('change', () => {
@@ -113,6 +101,7 @@ export function renderSnake(container, ctx) {
 
     renderLevelPicker(container.querySelector('#level-picker'), {
       value: level,
+      t,
       onChange: (newLevel) => {
         level = newLevel;
         persistSettings();
@@ -131,10 +120,10 @@ export function renderSnake(container, ctx) {
     container.innerHTML = `
       <div class="game-canvas-wrap">
         <div class="hud">
-          <span>Score: <strong id="hud-score">0</strong></span>
+          <span>${t('common.scoreLabel')} <strong id="hud-score">0</strong></span>
         </div>
         <div class="lane-legend">
-          ${SLOT_LABELS.map(
+          ${slotLabels().map(
             (label, i) => `
               <div class="legend-item">
                 <span class="small">${label}: ${chords[i]?.name ?? '?'}</span>
@@ -144,7 +133,7 @@ export function renderSnake(container, ctx) {
           ).join('')}
         </div>
         <canvas id="snake-canvas" width="480" height="480"></canvas>
-        <button class="btn" id="quit-btn">Quit to setup</button>
+        <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
 
@@ -168,17 +157,17 @@ export function renderSnake(container, ctx) {
   function renderGameOver(score) {
     container.innerHTML = `
       <div class="card game-over-panel">
-        <h2>Game Over</h2>
+        <h2>${t('common.gameOverTitle')}</h2>
         <div class="score">${score}</div>
-        <p class="hint">Hit a wall or your own tail. If four chords feel like a lot, drop down a difficulty level for more time between turns.</p>
+        <p class="hint">${t('snake.gameOverHint')}</p>
         <div id="hs-host"></div>
         <div class="row" style="justify-content:center; margin-top:1rem">
-          <button class="btn primary" id="retry-btn">Play again</button>
-          <button class="btn" id="setup-btn">Change settings</button>
+          <button class="btn primary" id="retry-btn">${t('common.playAgainBtn')}</button>
+          <button class="btn" id="setup-btn">${t('common.changeSettingsBtn')}</button>
         </div>
       </div>
     `;
-    renderHighScoreSection(container.querySelector('#hs-host'), 'snake', level, score);
+    renderHighScoreSection(container.querySelector('#hs-host'), 'snake', level, score, t);
     container.querySelector('#retry-btn').addEventListener('click', renderPlaying);
     container.querySelector('#setup-btn').addEventListener('click', renderSetup);
   }

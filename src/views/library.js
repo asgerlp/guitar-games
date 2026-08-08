@@ -2,20 +2,21 @@ import { formatNoteSet } from '../chords/noteUtils.js';
 import { renderChordDiagram } from '../chords/chordDiagram.js';
 
 export function renderLibrary(container, ctx) {
-  const { store } = ctx;
+  const { store, t } = ctx;
 
   container.innerHTML = `
-    <h2>Chord Library</h2>
-    <p class="hint">
-      These are the chords the app recognizes. The "Enabled" column controls which chords are
-      available to assign in games. To add a new chord or recalibrate one that isn't matching
-      reliably, use the calibration sections above — capturing a chord's actual live sound works
-      better than the defaults if your guitar/pickup/pedal sounds different from what they assume
-      (standard tuning, open position).
-    </p>
+    <h2>${t('library.title')}</h2>
+    <p class="hint">${t('library.intro')}</p>
     <table>
       <thead>
-        <tr><th>Enabled</th><th>Name</th><th>How to play</th><th>Notes</th><th>Source</th><th></th></tr>
+        <tr>
+          <th>${t('library.colEnabled')}</th>
+          <th>${t('library.colName')}</th>
+          <th>${t('library.colHowToPlay')}</th>
+          <th>${t('library.colNotes')}</th>
+          <th>${t('library.colSource')}</th>
+          <th></th>
+        </tr>
       </thead>
       <tbody id="chord-rows"></tbody>
     </table>
@@ -33,11 +34,11 @@ export function renderLibrary(container, ctx) {
             <input type="checkbox" data-toggle="${c.id}" ${store.isEnabled(c.id) ? 'checked' : ''} />
           </td>
           <td>${c.name}</td>
-          <td>${c.frets ? renderChordDiagram(c.frets) : '<span class="small">no diagram</span>'}</td>
-          <td class="small">${c.notes?.length ? formatNoteSet(c.notes) : c.chroma ? 'captured from audio' : '—'}</td>
+          <td>${c.frets ? renderChordDiagram(c.frets) : `<span class="small">${t('library.noDiagram')}</span>`}</td>
+          <td class="small">${c.notes?.length ? formatNoteSet(c.notes) : c.chroma ? t('library.capturedFromAudio') : '—'}</td>
           <td class="small">${c.source}</td>
           <td class="row">
-            ${c.source === 'custom' ? `<button class="btn danger" data-delete="${c.id}">Delete</button>` : ''}
+            ${c.source === 'custom' ? `<button class="btn danger" data-delete="${c.id}">${t('library.deleteBtn')}</button>` : ''}
           </td>
         </tr>
       `
@@ -49,7 +50,7 @@ export function renderLibrary(container, ctx) {
     });
     rowsEl.querySelectorAll('[data-delete]').forEach((el) => {
       el.addEventListener('click', () => {
-        if (confirm('Delete this chord from your library?')) {
+        if (confirm(t('library.confirmDelete'))) {
           store.remove(el.dataset.delete);
           renderRows();
         }

@@ -5,12 +5,12 @@
  * scrolling racer, a falling bird, and a grid-based snake.
  */
 export const LEVELS = [
-  { id: 1, label: 'Super Easy' },
-  { id: 2, label: 'Easy' },
-  { id: 3, label: 'Medium' },
-  { id: 4, label: 'Hard' },
-  { id: 5, label: 'Very Hard' },
-  { id: 6, label: 'Insane' },
+  { id: 1, labelKey: 'level.superEasy' },
+  { id: 2, labelKey: 'level.easy' },
+  { id: 3, labelKey: 'level.medium' },
+  { id: 4, labelKey: 'level.hard' },
+  { id: 5, labelKey: 'level.veryHard' },
+  { id: 6, labelKey: 'level.insane' },
 ];
 
 // New players land on "Easy" rather than the middle of the scale — a brand
@@ -27,6 +27,7 @@ export function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-export function levelLabel(level) {
-  return LEVELS.find((l) => l.id === level)?.label ?? 'Medium';
+export function levelLabel(level, t) {
+  const key = LEVELS.find((l) => l.id === level)?.labelKey ?? 'level.medium';
+  return t(key);
 }
