@@ -17,6 +17,11 @@ export const fr = {
   'home.pongDesc': "Maintenez un accord pour déplacer la raquette à gauche, un autre pour la droite — gardez la balle en jeu.",
   'home.runDesc': "Sautez par-dessus les rondins et baissez-vous sous les poutres avec deux accords. Maintenez sauter pour enchaîner les sauts, maintenez se baisser pour glisser dessous.",
   'home.snakeDesc': "Quatre accords dirigent haut/bas/gauche/droite. Snake classique — mangez, ne heurtez ni vous-même ni un mur.",
+  'home.stackDesc': 'Puzzle classique de blocs qui tombent. Déplacez, tournez et faites tomber les pièces avec quatre accords — videz des lignes complètes pour marquer.',
+  'home.chompDesc': "Traversez un labyrinthe en mangeant des points pendant que des fantômes vous traquent. Prenez une pastille pour brièvement inverser les rôles.",
+  'home.hopperDesc': 'Traversez la circulation et une rivière de rondins avec quatre accords. Pas de fond dans l\'eau — montez sur un rondin ou coulez.',
+  'home.highwayDesc': "Des notes tombent sur une autoroute en 3D — tenez le bon accord à l'instant où une note franchit la ligne pour marquer.",
+  'home.blocksDesc': "Un bac à sable de construction voxel original. Marchez, tournez et sautez avec des accords ; cassez et posez des blocs à la souris.",
   'home.highScoresTitle': 'Meilleurs scores',
   'home.highScoresDesc': "Consultez le top 10 de chaque jeu. Atteignez le top 10 et on vous demandera votre nom.",
 
@@ -217,4 +222,66 @@ export const fr = {
     "Contrôle la vitesse de déplacement du serpent. Changer proprement entre quatre accords est plus difficile qu'entre deux, alors commencez par Très facile ou Facile si c'est votre première partie.",
   'snake.gameOverHint':
     "Touché un mur ou votre propre queue. Si quatre accords semblent difficiles à gérer, baissez le niveau de difficulté pour plus de temps entre les virages.",
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Puzzle classique de blocs qui tombent. Quatre accords pilotent la pièce : déplacez-la à gauche ou à droite, tournez-la, ou maintenez le quatrième pour la faire tomber plus vite. Videz des lignes complètes pour marquer — plus il y en a d'un coup, plus le bonus est gros.",
+  'stack.moveLeft': 'Déplacer à gauche',
+  'stack.moveRight': 'Déplacer à droite',
+  'stack.rotate': 'Tourner',
+  'stack.softDrop': 'Chute rapide',
+  'stack.kbFallbackLabel': 'Activer la solution flèches (pour tester sans guitare)',
+  'stack.difficultyHint': 'Contrôle la vitesse de chute des pièces, et à quel point vider des lignes l\'accélère.',
+  'stack.gameOverHint': "La pile a atteint le sommet. Vider des lignes complètes la garde basse — ne laissez pas les trous s'accumuler.",
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Traversez un labyrinthe en mangeant des points pendant que des fantômes vous traquent. Quatre accords vous déplacent haut/bas/gauche/droite — un virage est mis en attente et prend effet dès que vous atteignez la prochaine intersection, sans besoin d'un timing au pixel près. Prenez une grosse pastille pulsante pour rendre brièvement les fantômes comestibles.",
+  'chomp.up': 'Haut',
+  'chomp.down': 'Bas',
+  'chomp.left': 'Gauche',
+  'chomp.right': 'Droite',
+  'chomp.kbFallbackLabel': 'Activer la solution flèches (pour tester sans guitare)',
+  'chomp.difficultyHint': 'Contrôle la vitesse des fantômes et leur nombre, ainsi que la durée pendant laquelle une pastille les rend comestibles.',
+  'chomp.gameOverHint': "Attrapé par un fantôme sans vie restante, ou le labyrinthe est nettoyé. Les pastilles vous offrent une fenêtre pour inverser les rôles.",
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Traversez une route puis une rivière pour atteindre les nénuphars de l'autre côté. Quatre accords vous déplacent haut/bas/gauche/droite, un bond à la fois. La circulation, c'est la mort instantanée — évitez-la. La rivière n'a pas de fond, vous ne survivez qu'en montant sur un rondin ; rester sur l'eau libre, ou dériver hors des bords en montant sur un rondin, termine la partie tout aussi vite.",
+  'hopper.up': 'Haut',
+  'hopper.down': 'Bas',
+  'hopper.left': 'Gauche',
+  'hopper.right': 'Droite',
+  'hopper.kbFallbackLabel': 'Activer la solution flèches (pour tester sans guitare)',
+  'hopper.difficultyHint': 'Contrôle la vitesse de la circulation et des rondins, et leur densité.',
+  'hopper.gameOverHint': "Heurté par la circulation, noyé dans la rivière, ou atterri entre les nénuphars. Observez la voie avant de vous engager dans le bond.",
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Des notes tombent sur l'autoroute vers vous, chaque voie liée à l'un de vos accords. Contrairement aux autres jeux ici, celui-ci veut la vraie chose : tenez le bon accord à l'instant où une note franchit la ligne de frappe. Un coup net fait grimper votre combo ; en laisser passer une coûte de la santé. Santé à zéro, ou le set entier joué, met fin à la partie.",
+  'highway.lanesLabel': 'Voies',
+  'highway.laneN': 'Voie {n}',
+  'highway.kbFallbackLabel': 'Activer la solution chiffres (pour tester sans guitare)',
+  'highway.difficultyHint': 'Contrôle la vitesse de chute des notes, leur densité, et le coût d\'une note manquée.',
+  'highway.comboHud': 'Combo :',
+  'highway.healthHud': 'Santé :',
+  'highway.gameOverHint': "Trop de notes manquées ont vidé votre santé, ou vous avez joué tout le set. Le combo grimpe vite une fois le timing acquis.",
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "Un bac à sable de construction voxel original — parcourez un petit monde vallonné et construisez avec des blocs d'herbe, de terre, de pierre, de bois et de feuilles avant la fin du chrono. Trois accords le pilotent façon char d'assaut : Avancer marche dans la direction où vous regardez, et les deux autres tournent cette direction à gauche ou à droite — pas besoin de viser à la souris. Un quatrième accord fait sauter.",
+  'blocks.forward': 'Avancer',
+  'blocks.turnLeft': 'Tourner à gauche',
+  'blocks.turnRight': 'Tourner à droite',
+  'blocks.jump': 'Sauter',
+  'blocks.kbFallbackLabel': 'Activer la solution flèches + espace (pour tester sans guitare)',
+  'blocks.mouseHint': 'Clic gauche pour casser le bloc en face de vous ; clic droit pour poser le type de bloc sélectionné contre lui.',
+  'blocks.difficultyHint': 'Contrôle la durée de votre session de construction, et votre vitesse de marche et de rotation.',
+  'blocks.timeHud': 'Temps :',
+  'blocks.type.grass': 'Herbe',
+  'blocks.type.dirt': 'Terre',
+  'blocks.type.stone': 'Pierre',
+  'blocks.type.wood': 'Bois',
+  'blocks.type.leaves': 'Feuilles',
+  'blocks.gameOverHint': "Le temps est écoulé. Le score correspond au nombre total de blocs posés durant cette session.",
 };

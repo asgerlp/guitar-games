@@ -17,6 +17,11 @@ export const no = {
   'home.pongDesc': 'Hold én akkord for å flytte racketen til venstre, en annen for høyre — hold ballen i spill.',
   'home.runDesc': 'Hopp over stokker og duk under bjelker med to akkorder. Hold hopp for å fortsette å hoppe, hold duk for å gli under.',
   'home.snakeDesc': "Fire akkorder styrer opp/ned/venstre/høyre. Klassisk orm — spis mat, ikke treff deg selv eller en vegg.",
+  'home.stackDesc': 'Klassisk fallende-klosser-puslespill. Flytt, roter og slipp klosser med fire akkorder — rydd hele rader for poeng.',
+  'home.chompDesc': 'Styr gjennom en labyrint og spis prikker mens spøkelser jakter på deg. Ta en pulserende pille for kortvarig å snu situasjonen.',
+  'home.hopperDesc': 'Kryss trafikk og en elv av tømmerstokker med fire akkorder. Ingen bunn i vannet — ri på en stokk eller drukne.',
+  'home.highwayDesc': 'Toner faller ned en 3D-motorvei — hold riktig akkord i det øyeblikket en tone krysser linjen for å score.',
+  'home.blocksDesc': 'En original voksel-byggesandkasse. Gå, sving og hopp med akkorder; knus og plasser klosser med musen.',
   'home.highScoresTitle': 'Toppscorer',
   'home.highScoresDesc': "Se topp 10 for hvert spill. Klarer du en topp-10-runde, blir du bedt om navnet ditt.",
 
@@ -217,4 +222,66 @@ export const no = {
     'Styrer hvor fort ormen beveger seg. Å bytte rent mellom fire akkorder er vanskeligere enn to, så start på Superlett eller Lett hvis dette er din første runde.',
   'snake.gameOverHint':
     'Traff en vegg eller din egen hale. Hvis fire akkorder føles som mye, gå ned et vanskelighetsnivå for mer tid mellom svingene.',
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Klassisk fallende-klosser-puslespill. Fire akkorder styrer klossen: flytt den til venstre eller høyre, roter den, eller hold den fjerde for å få den til å falle raskere. Rydd hele rader for å score — jo flere på én gang, jo større bonus.",
+  'stack.moveLeft': 'Flytt venstre',
+  'stack.moveRight': 'Flytt høyre',
+  'stack.rotate': 'Roter',
+  'stack.softDrop': 'Hurtigfall',
+  'stack.kbFallbackLabel': 'Aktiver piltast-løsning (for testing uten gitar)',
+  'stack.difficultyHint': 'Styrer hvor fort klosser faller, og hvor mye raskere ryddede rader gjør dem.',
+  'stack.gameOverHint': 'Stabelen nådde toppen. Å rydde hele rader holder den lav — ikke la hull hope seg opp.',
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Styr gjennom en labyrint og spis prikker mens spøkelser jakter på deg. Fire akkorder flytter deg opp/ned/venstre/høyre — en sving legges i kø og trer i kraft så snart du når neste kryss, så det krever ikke bildeperfekt timing. Ta en stor pulserende pille for kortvarig å gjøre spøkelsene spiselige.",
+  'chomp.up': 'Opp',
+  'chomp.down': 'Ned',
+  'chomp.left': 'Venstre',
+  'chomp.right': 'Høyre',
+  'chomp.kbFallbackLabel': 'Aktiver piltast-løsning (for testing uten gitar)',
+  'chomp.difficultyHint': 'Styrer spøkelsenes fart og hvor mange som jakter på deg, samt hvor lenge en pille gjør dem spiselige.',
+  'chomp.gameOverHint': 'Fanget av et spøkelse uten liv igjen, eller labyrinten er tom. Kraftpiller gir deg et vindu til å snu situasjonen.',
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Kryss en vei og en elv for å nå putene på den andre siden. Fire akkorder flytter deg opp/ned/venstre/høyre, ett hopp om gangen. Trafikk er øyeblikkelig død — unngå den. Elven har ingen bunn, så du overlever bare ved å ri på en tømmerstokk; å stå i åpent vann, eller å drive av gårde ved en av kantene mens du rir, avslutter runden like fort.",
+  'hopper.up': 'Opp',
+  'hopper.down': 'Ned',
+  'hopper.left': 'Venstre',
+  'hopper.right': 'Høyre',
+  'hopper.kbFallbackLabel': 'Aktiver piltast-løsning (for testing uten gitar)',
+  'hopper.difficultyHint': 'Styrer hvor fort trafikk og tømmerstokker beveger seg, og hvor tett pakket de er.',
+  'hopper.gameOverHint': 'Truffet av trafikk, druknet i elven, eller landet mellom putene. Følg med på feltet før du forplikter deg til hoppet.',
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Toner faller nedover motorveien mot deg, hvert felt bundet til en av akkordene dine. I motsetning til de andre spillene her, vil dette ha det ekte: hold riktig akkord i det øyeblikket en tone krysser trefflinjen. Et rent treff bygger comboen din; å la en passere koster helse. Helse på null, eller at du spiller gjennom hele settet, avslutter runden.",
+  'highway.lanesLabel': 'Felt',
+  'highway.laneN': 'Felt {n}',
+  'highway.kbFallbackLabel': 'Aktiver talltast-løsning (for testing uten gitar)',
+  'highway.difficultyHint': 'Styrer hvor fort toner faller, hvor tett pakket de er, og hvor mye en bom koster deg.',
+  'highway.comboHud': 'Combo:',
+  'highway.healthHud': 'Helse:',
+  'highway.gameOverHint': 'For mange bommer tømte helsen din, eller du spilte gjennom hele settet. Comboen bygges raskt opp når timingen klaffer.',
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "En original voksel-byggesandkasse — gå rundt i en liten kupert verden og bygg med gress-, jord-, stein-, tre- og løvklosser før tiden renner ut. Tre akkorder styrer den i stridsvognstil: Fremover går den veien du vender deg, og de to andre svinger den retningen venstre eller høyre — ingen musepeking nødvendig. En fjerde akkord hopper.",
+  'blocks.forward': 'Fremover',
+  'blocks.turnLeft': 'Sving venstre',
+  'blocks.turnRight': 'Sving høyre',
+  'blocks.jump': 'Hopp',
+  'blocks.kbFallbackLabel': 'Aktiver piltast- og mellomromsløsning (for testing uten gitar)',
+  'blocks.mouseHint': 'Venstreklikk knuser klossen du vender mot; høyreklikk plasserer den valgte klosstypen mot den.',
+  'blocks.difficultyHint': 'Styrer hvor lenge byggeøkten din varer, og hvor fort du går og svinger.',
+  'blocks.timeHud': 'Tid:',
+  'blocks.type.grass': 'Gress',
+  'blocks.type.dirt': 'Jord',
+  'blocks.type.stone': 'Stein',
+  'blocks.type.wood': 'Tre',
+  'blocks.type.leaves': 'Løv',
+  'blocks.gameOverHint': 'Tiden er ute. Poengsum er totalt antall klosser plassert denne økten.',
 };

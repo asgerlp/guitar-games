@@ -11,6 +11,11 @@ export const GAME_LABELS = {
   pong: 'Chord Pong',
   run: 'Chord Run',
   snake: 'Chord Snake',
+  stack: 'Chord Stack',
+  chomp: 'Chord Chomp',
+  hopper: 'Chord Hopper',
+  highway: 'Chord Highway',
+  blocks: 'Chord Blocks',
 };
 
 function loadAll() {

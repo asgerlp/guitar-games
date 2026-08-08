@@ -17,6 +17,11 @@ export const de = {
   'home.pongDesc': 'Halte einen Akkord, um den Schläger nach links zu bewegen, einen anderen für rechts — halte den Ball im Spiel.',
   'home.runDesc': 'Springe über Baumstämme und ducke unter Balken mit zwei Akkorden. Halte Springen, um weiter zu hüpfen, halte Ducken, um darunter zu gleiten.',
   'home.snakeDesc': "Vier Akkorde steuern hoch/runter/links/rechts. Klassisches Snake — friss Futter, ramm dich nicht selbst oder eine Wand.",
+  'home.stackDesc': 'Klassisches Fallblock-Puzzle. Verschiebe, drehe und lasse Blöcke mit vier Akkorden fallen — räume volle Reihen für Punkte.',
+  'home.chompDesc': 'Steuere durch ein Labyrinth und friss Punkte, während Geister dich jagen. Schnapp dir eine Kraftpille, um kurzzeitig den Spieß umzudrehen.',
+  'home.hopperDesc': 'Überquere Verkehr und einen Fluss aus Baumstämmen mit vier Akkorden. Kein Boden im Wasser — reite auf einem Stamm oder ertrinke.',
+  'home.highwayDesc': 'Noten fallen eine 3D-Straße herab — halte im Moment, in dem eine Note die Linie kreuzt, den richtigen Akkord, um zu punkten.',
+  'home.blocksDesc': 'Eine originale Voxel-Bau-Sandbox. Laufe, drehe dich und springe mit Akkorden; brich und platziere Blöcke mit der Maus.',
   'home.highScoresTitle': 'Bestenliste',
   'home.highScoresDesc': "Sieh dir die Top 10 für jedes Spiel an. Schaffst du einen Top-10-Lauf, wirst du nach deinem Namen gefragt.",
 
@@ -217,4 +222,66 @@ export const de = {
     'Steuert, wie schnell die Schlange sich bewegt. Sauber zwischen vier Akkorden zu wechseln ist schwerer als zwischen zweien — starte also mit Sehr leicht oder Leicht, wenn das dein erster Lauf ist.',
   'snake.gameOverHint':
     'Gegen eine Wand oder den eigenen Schwanz gestoßen. Wenn dir vier Akkorde zu viel sind, gehe eine Schwierigkeitsstufe runter für mehr Zeit zwischen den Wendungen.',
+
+  // --- Chord Stack ---
+  'stack.description':
+    "Klassisches Fallblock-Puzzle. Vier Akkorde steuern den Block: verschiebe ihn nach links oder rechts, drehe ihn, oder halte den vierten, damit er schneller fällt. Räume volle Reihen, um zu punkten — je mehr Reihen auf einmal, desto größer der Bonus.",
+  'stack.moveLeft': 'Links bewegen',
+  'stack.moveRight': 'Rechts bewegen',
+  'stack.rotate': 'Drehen',
+  'stack.softDrop': 'Schnellfall',
+  'stack.kbFallbackLabel': 'Pfeiltasten-Alternative aktivieren (zum Testen ohne Gitarre)',
+  'stack.difficultyHint': 'Steuert, wie schnell Blöcke fallen, und wie viel schneller geräumte Reihen sie fallen lassen.',
+  'stack.gameOverHint': 'Der Stapel hat die Spitze erreicht. Volle Reihen zu räumen hält ihn niedrig — lass keine Lücken sich stapeln.',
+
+  // --- Chord Chomp ---
+  'chomp.description':
+    "Steuere durch ein Labyrinth und friss Punkte, während Geister dich jagen. Vier Akkorde bewegen dich hoch/runter/links/rechts — eine Richtungsänderung wird vorgemerkt und tritt in Kraft, sobald du die nächste Kreuzung erreichst, sodass kein bildgenaues Timing nötig ist. Schnapp dir eine große, pulsierende Pille, um die Geister kurzzeitig essbar zu machen.",
+  'chomp.up': 'Hoch',
+  'chomp.down': 'Runter',
+  'chomp.left': 'Links',
+  'chomp.right': 'Rechts',
+  'chomp.kbFallbackLabel': 'Pfeiltasten-Alternative aktivieren (zum Testen ohne Gitarre)',
+  'chomp.difficultyHint': 'Steuert die Geschwindigkeit der Geister und wie viele dich jagen, sowie wie lange eine Pille sie essbar macht.',
+  'chomp.gameOverHint': 'Von einem Geist ohne verbleibende Leben erwischt, oder das Labyrinth ist leer. Kraftpillen verschaffen dir ein Zeitfenster, um den Spieß umzudrehen.',
+
+  // --- Chord Hopper ---
+  'hopper.description':
+    "Überquere eine Straße und einen Fluss, um die Plattformen auf der anderen Seite zu erreichen. Vier Akkorde bewegen dich hoch/runter/links/rechts, jeweils einen Sprung. Verkehr bedeutet sofortigen Tod — weiche ihm aus. Der Fluss hat keinen Boden, du überlebst nur, indem du auf einem Baumstamm reitest; auf offenem Wasser zu stehen, oder beim Reiten über einen der Ränder zu treiben, beendet den Lauf genauso schnell.",
+  'hopper.up': 'Hoch',
+  'hopper.down': 'Runter',
+  'hopper.left': 'Links',
+  'hopper.right': 'Rechts',
+  'hopper.kbFallbackLabel': 'Pfeiltasten-Alternative aktivieren (zum Testen ohne Gitarre)',
+  'hopper.difficultyHint': 'Steuert, wie schnell Verkehr und Baumstämme sich bewegen, und wie dicht sie gepackt sind.',
+  'hopper.gameOverHint': 'Vom Verkehr erwischt, im Fluss ertrunken, oder zwischen den Plattformen gelandet. Beobachte die Spur, bevor du den Sprung wagst.',
+
+  // --- Chord Highway ---
+  'highway.description':
+    "Noten fallen die Straße auf dich zu, jede Spur an einen deiner Akkorde gebunden. Anders als die anderen Spiele hier will dieses die echte Sache: halte in dem Moment, in dem eine Note die Trefferlinie kreuzt, den richtigen Akkord. Ein sauberer Treffer baut deine Combo auf; eine durchgelassene Note kostet Gesundheit. Gesundheit auf null, oder das ganze Set gespielt, beendet den Lauf.",
+  'highway.lanesLabel': 'Spuren',
+  'highway.laneN': 'Spur {n}',
+  'highway.kbFallbackLabel': 'Zifferntasten-Alternative aktivieren (zum Testen ohne Gitarre)',
+  'highway.difficultyHint': 'Steuert, wie schnell Noten fallen, wie dicht sie gepackt sind, und wie viel ein Fehltreffer dich kostet.',
+  'highway.comboHud': 'Combo:',
+  'highway.healthHud': 'Gesundheit:',
+  'highway.gameOverHint': 'Zu viele Fehltreffer haben deine Gesundheit aufgebraucht, oder du hast das ganze Set durchgespielt. Die Combo baut sich schnell auf, sobald das Timing passt.',
+
+  // --- Chord Blocks ---
+  'blocks.description':
+    "Eine originale Voxel-Bau-Sandbox — laufe durch eine kleine hügelige Welt und baue mit Gras-, Erd-, Stein-, Holz- und Laubblöcken, bevor die Zeit abläuft. Drei Akkorde steuern sie im Panzerstil: Vorwärts läuft in die Richtung, in die du schaust, und die anderen beiden drehen diese Blickrichtung nach links oder rechts — kein Mouse-Look nötig. Ein vierter Akkord springt.",
+  'blocks.forward': 'Vorwärts',
+  'blocks.turnLeft': 'Links drehen',
+  'blocks.turnRight': 'Rechts drehen',
+  'blocks.jump': 'Springen',
+  'blocks.kbFallbackLabel': 'Pfeiltasten- und Leertaste-Alternative aktivieren (zum Testen ohne Gitarre)',
+  'blocks.mouseHint': 'Linksklick zerstört den Block, den du ansiehst; Rechtsklick platziert deinen gewählten Blocktyp daran.',
+  'blocks.difficultyHint': 'Steuert, wie lange deine Bausitzung dauert, und wie schnell du läufst und dich drehst.',
+  'blocks.timeHud': 'Zeit:',
+  'blocks.type.grass': 'Gras',
+  'blocks.type.dirt': 'Erde',
+  'blocks.type.stone': 'Stein',
+  'blocks.type.wood': 'Holz',
+  'blocks.type.leaves': 'Laub',
+  'blocks.gameOverHint': 'Die Zeit ist abgelaufen. Punktzahl ist die Gesamtzahl der in dieser Sitzung platzierten Blöcke.',
 };
