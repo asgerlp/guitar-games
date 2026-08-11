@@ -6,6 +6,7 @@ const PADDLE_Y_INSET = 46; // distance from the bottom of the canvas to the padd
 
 const DEFAULT_PADDLE_WIDTH = 110;
 const DEFAULT_PADDLE_SPEED = 470;
+const DEFAULT_PADDLE_STEP = 46; // px nudged per chord strum, independent of how long the note rings
 const DEFAULT_BALL_SPEED_START = 280;
 const DEFAULT_BALL_SPEED_MAX = 590;
 const DEFAULT_BALL_SPEED_RAMP_PER_BOUNCE = 12;
@@ -23,11 +24,19 @@ export function pongParamsForLevel(level) {
 }
 
 /**
- * Single-player Pong/Breakout hybrid: two chords steer a paddle left/right —
- * continuous while held, like Chord Flap's lift, not a snap-to-lane like
- * Racer — to keep a ball from passing the bottom edge. Score is the rally
- * length (successful paddle bounces); the ball speeds up a little with each
- * one so a long rally is meaningfully harder than a short one.
+ * Single-player Pong/Breakout hybrid: two chords steer a paddle left/right
+ * to keep a ball from passing the bottom edge. Chord input nudges the
+ * paddle a fixed step per strum rather than gliding continuously for as
+ * long as the chord is heard — a strummed chord naturally rings out for a
+ * second or more with no clean "release" signal the way a key-up event
+ * has, so continuous-while-matched movement sent the paddle flying to
+ * whichever edge it last strummed toward. Each genuinely new chord match
+ * (a fresh strum, not the same note still ringing) is one step, so
+ * fine-positioning under the ball just means strumming more or less.
+ * Keyboard fallback keeps the more familiar hold-to-glide behavior, since
+ * a key-up event is reliable there. Score is the rally length (successful
+ * paddle bounces); the ball speeds up a little with each one so a long
+ * rally is meaningfully harder than a short one.
  */
 export class ChordPongGame extends EventTarget {
   constructor(
@@ -38,6 +47,7 @@ export class ChordPongGame extends EventTarget {
       keyboardFallback = false,
       paddleWidth = DEFAULT_PADDLE_WIDTH,
       paddleSpeed = DEFAULT_PADDLE_SPEED,
+      paddleStep = DEFAULT_PADDLE_STEP,
       ballSpeedStart = DEFAULT_BALL_SPEED_START,
       ballSpeedMax = DEFAULT_BALL_SPEED_MAX,
       ballSpeedRampPerBounce = DEFAULT_BALL_SPEED_RAMP_PER_BOUNCE,
@@ -51,13 +61,14 @@ export class ChordPongGame extends EventTarget {
     this.keyboardFallback = keyboardFallback;
     this.paddleWidth = paddleWidth;
     this.paddleSpeed = paddleSpeed;
+    this.paddleStep = paddleStep;
     this.ballSpeedMax = ballSpeedMax;
     this.ballSpeedRampPerBounce = ballSpeedRampPerBounce;
 
     this.paddleX = canvas.width / 2;
     this.paddleY = canvas.height - PADDLE_Y_INSET;
 
-    this.audioDir = null; // 'left' | 'right' | null — live, not sticky
+    this.lastChordId = null; // tracks the currently-sounding chord so a held note only steps once
     this.keysDown = new Set();
 
     const angle = Math.random() * 0.6 - 0.3; // near-vertical, slight random horizontal
@@ -100,13 +111,16 @@ export class ChordPongGame extends EventTarget {
   }
 
   _handleChordChange(match) {
-    if (!match) {
-      this.audioDir = null;
-      return;
-    }
-    if (match.id === this.chordIds[0]) this.audioDir = 'left';
-    else if (match.id === this.chordIds[1]) this.audioDir = 'right';
-    else this.audioDir = null;
+    const id = match?.id ?? null;
+    if (id === this.lastChordId) return; // same chord still ringing, not a new strum
+    this.lastChordId = id;
+    if (id === this.chordIds[0]) this._nudgePaddle(-1);
+    else if (id === this.chordIds[1]) this._nudgePaddle(1);
+  }
+
+  _nudgePaddle(dir) {
+    const halfW = this.paddleWidth / 2;
+    this.paddleX = Math.max(halfW, Math.min(this.canvas.width - halfW, this.paddleX + dir * this.paddleStep));
   }
 
   _handleKey(e, isDown) {
@@ -119,7 +133,7 @@ export class ChordPongGame extends EventTarget {
   get dir() {
     if (this.keysDown.has('left')) return 'left';
     if (this.keysDown.has('right')) return 'right';
-    return this.audioDir;
+    return null;
   }
 
   _loop(time) {
