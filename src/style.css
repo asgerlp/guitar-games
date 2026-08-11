@@ -537,9 +537,8 @@ tbody tr:nth-child(3) td:first-child {
 
 .lane-legend {
   display: flex;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  gap: 0.85rem;
   background: var(--panel);
   border: 2px solid var(--border);
   border-radius: 0.5rem;
@@ -567,12 +566,87 @@ tbody tr:nth-child(3) td:first-child {
   font-weight: 600;
 }
 
+.block-palette {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Grid layout: the chord legend sits beside the game canvas (rather than
+   above it) so the whole game fits on screen without scrolling. Areas not
+   present in a given game (e.g. "palette") simply stay empty. */
 .game-canvas-wrap {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.9rem;
+  display: grid;
+  grid-template-columns: minmax(150px, 230px) minmax(0, 480px);
+  grid-template-areas:
+    'hud hud'
+    'legend canvas'
+    'legend loading'
+    'legend quit';
+  justify-content: center;
+  align-items: start;
+  gap: 0.9rem 1.5rem;
+}
+
+.game-canvas-wrap.has-palette {
+  grid-template-areas:
+    'hud hud'
+    'legend canvas'
+    'legend loading'
+    'legend palette'
+    'legend quit';
+}
+
+.game-canvas-wrap > .hud {
+  grid-area: hud;
+  justify-self: center;
+}
+
+.game-canvas-wrap > .lane-legend {
+  grid-area: legend;
+}
+
+.game-canvas-wrap > canvas,
+.game-canvas-wrap > .crosshair-wrap {
+  grid-area: canvas;
+  justify-self: center;
+}
+
+.game-canvas-wrap > .hint {
+  grid-area: loading;
+  justify-self: center;
+}
+
+.game-canvas-wrap > .block-palette {
+  grid-area: palette;
+  justify-self: center;
+}
+
+.game-canvas-wrap > .btn {
+  grid-area: quit;
+  justify-self: center;
+}
+
+@media (max-width: 820px) {
+  .game-canvas-wrap,
+  .game-canvas-wrap.has-palette {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'hud'
+      'legend'
+      'canvas'
+      'loading'
+      'palette'
+      'quit';
+  }
+
+  .lane-legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }
 
 canvas {
