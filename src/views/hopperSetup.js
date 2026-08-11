@@ -114,8 +114,21 @@ export function renderHopper(container, ctx) {
   }
 
   function renderPlaying() {
+    const enabled = store.enabled();
+    const chords = chordIds.map((id) => enabled.find((c) => c.id === id));
+
     container.innerHTML = `
       <div class="game-canvas-wrap">
+        <div class="lane-legend">
+          ${slotLabels().map(
+            (label, i) => `
+              <div class="legend-item">
+                <span class="small">${label}: ${chords[i]?.name ?? '?'}</span>
+                ${chords[i]?.frets ? renderChordDiagram(chords[i].frets, { width: 48, height: 62 }) : ''}
+              </div>
+            `
+          ).join('')}
+        </div>
         <canvas id="hopper-canvas" width="${HOPPER_CANVAS_WIDTH}" height="${HOPPER_CANVAS_HEIGHT}"></canvas>
         <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>

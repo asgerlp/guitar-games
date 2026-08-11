@@ -122,18 +122,31 @@ export function renderBlocks(container, ctx) {
   }
 
   async function renderPlaying() {
+    const enabled = store.enabled();
+    const chords = chordIds.map((id) => enabled.find((c) => c.id === id));
+
     container.innerHTML = `
-      <div class="game-canvas-wrap">
+      <div class="game-canvas-wrap has-palette">
         <div class="hud">
           <span>${t('common.scoreLabel')} <strong id="hud-score">0</strong></span>
           <span>${t('blocks.timeHud')} <strong id="hud-time">--</strong></span>
         </div>
-        <div class="lane-legend" id="palette"></div>
+        <div class="lane-legend">
+          ${slotLabels().map(
+            (label, i) => `
+              <div class="legend-item">
+                <span class="small">${label}: ${chords[i]?.name ?? '?'}</span>
+                ${chords[i]?.frets ? renderChordDiagram(chords[i].frets, { width: 48, height: 62 }) : ''}
+              </div>
+            `
+          ).join('')}
+        </div>
         <div class="crosshair-wrap">
           <canvas id="blocks-canvas" width="480" height="480"></canvas>
           <div class="crosshair" aria-hidden="true"></div>
         </div>
         <p class="hint" id="blocks-loading">${t('run.loadingEngine')}</p>
+        <div class="block-palette" id="palette"></div>
         <button class="btn" id="quit-btn">${t('common.quitBtn')}</button>
       </div>
     `;
