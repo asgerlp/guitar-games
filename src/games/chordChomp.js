@@ -248,31 +248,49 @@ export class ChordChompGame extends EventTarget {
     if (this.running) this._raf = requestAnimationFrame((t) => this._loop(t));
   }
 
-  _isAligned(entity) {
-    return Math.abs(entity.x - entity.c) < 0.06 && Math.abs(entity.y - entity.r) < 0.06;
-  }
-
   _canMove(r, c, dir) {
     return neighborsOf(this.walls, r, c).some((n) => n.dir === dir);
   }
 
-  _wrapPosition(entity) {
-    if (entity.c < 0) {
-      entity.c = COLS - 1;
-      entity.x = entity.c;
-    } else if (entity.c >= COLS) {
-      entity.c = 0;
-      entity.x = entity.c;
-    }
-  }
-
-  _moveEntity(entity, speed, dt) {
-    const { dx, dy } = DIRS[entity.dir] ?? { dx: 0, dy: 0 };
-    entity.x += dx * speed * dt;
-    entity.y += dy * speed * dt;
-    if (this._isAligned(entity)) {
-      entity.x = entity.c;
-      entity.y = entity.r;
+  /**
+   * Advances an entity up to `speed * dt` cells along its current
+   * direction, but never past the center of the next cell in one step —
+   * each cell boundary is crossed exactly, one at a time, with `onArrive`
+   * re-validating (and possibly changing) direction right there. This is
+   * what actually enforces walls: doing it via a fixed on-screen distance
+   * threshold ("close enough to the cell center") instead broke down as
+   * soon as a single frame's movement (speed * dt, up to ~0.26 cells here)
+   * could exceed that threshold — the entity would step clean over the
+   * check without ever registering as "arrived," so the direction (and any
+   * wall in front of it) never got re-validated and it just kept sliding
+   * through walls. Looping per-cell instead means the check can't be
+   * skipped regardless of frame timing or speed.
+   */
+  _advance(entity, speed, dt, onArrive) {
+    if (entity.x === entity.c && entity.y === entity.r) onArrive(entity);
+    let remaining = speed * dt;
+    let guard = 0;
+    while (remaining > 1e-9 && entity.dir && guard++ < 8) {
+      const { dx, dy } = DIRS[entity.dir];
+      const targetX = entity.c + dx;
+      const targetY = entity.r + dy;
+      const dist = dx !== 0 ? Math.abs(targetX - entity.x) : Math.abs(targetY - entity.y);
+      if (dist <= remaining + 1e-9) {
+        entity.x = targetX;
+        entity.y = targetY;
+        remaining -= dist;
+        // Tunnel wraparound: land exactly on the boundary, then jump to the
+        // opposite edge — same abrupt teleport the game has always used.
+        if (entity.x < 0) entity.x = COLS - 1;
+        else if (entity.x > COLS - 1) entity.x = 0;
+        entity.c = entity.x;
+        entity.r = entity.y;
+        onArrive(entity);
+      } else {
+        entity.x += dx * remaining;
+        entity.y += dy * remaining;
+        remaining = 0;
+      }
     }
   }
 
@@ -282,49 +300,37 @@ export class ChordChompGame extends EventTarget {
     this.animT += dt;
 
     const p = this.player;
-    if (this._isAligned(p)) {
-      p.r = Math.round(p.y);
-      p.c = Math.round(p.x);
-      if (p.queued !== p.dir && this._canMove(p.r, p.c, p.queued)) p.dir = p.queued;
-      if (!this._canMove(p.r, p.c, p.dir)) p.dir = null;
-    }
-    if (p.dir) this._moveEntity(p, this.playerSpeed, dt);
-    this._wrapPosition(p);
+    this._advance(p, this.playerSpeed, dt, (entity) => {
+      if (entity.queued !== entity.dir && this._canMove(entity.r, entity.c, entity.queued)) entity.dir = entity.queued;
+      if (entity.dir && !this._canMove(entity.r, entity.c, entity.dir)) entity.dir = null;
 
-    if (this._isAligned(p)) {
-      const r = Math.round(p.y);
-      const c = Math.round(p.x);
-      if (this.dots[r][c]) {
-        this.dots[r][c] = false;
+      if (this.dots[entity.r][entity.c]) {
+        this.dots[entity.r][entity.c] = false;
         this.score += 10;
       }
-      const pelletIdx = this.pellets.findIndex((pe) => pe.r === r && pe.c === c && !pe.eaten);
+      const pelletIdx = this.pellets.findIndex((pe) => pe.r === entity.r && pe.c === entity.c && !pe.eaten);
       if (pelletIdx !== -1) {
         this.pellets[pelletIdx].eaten = true;
         this.score += 50;
         for (const g of this.ghosts) g.frightened = this.frightenedSec;
       }
-    }
+    });
 
     for (const g of this.ghosts) {
       if (g.frightened > 0) g.frightened = Math.max(0, g.frightened - dt);
-      if (this._isAligned(g)) {
-        g.r = Math.round(g.y);
-        g.c = Math.round(g.x);
-        const options = neighborsOf(this.walls, g.r, g.c);
+      const speed = this.playerSpeed * g.speedMul * (g.frightened > 0 ? 0.6 : 1);
+      this._advance(g, speed, dt, (entity) => {
+        const options = neighborsOf(this.walls, entity.r, entity.c);
         let nextDir = null;
-        if (g.frightened > 0) {
-          const away = options.filter((o) => o.dir !== this._opposite(g.dir));
+        if (entity.frightened > 0) {
+          const away = options.filter((o) => o.dir !== this._opposite(entity.dir));
           nextDir = (away.length ? away : options)[Math.floor(Math.random() * (away.length ? away.length : options.length))]?.dir;
         } else {
-          const step = bfsFirstStep(this.walls, { r: g.r, c: g.c }, { r: Math.round(p.y), c: Math.round(p.x) });
+          const step = bfsFirstStep(this.walls, { r: entity.r, c: entity.c }, { r: p.r, c: p.c });
           nextDir = step ?? options[Math.floor(Math.random() * options.length)]?.dir;
         }
-        if (nextDir) g.dir = nextDir;
-      }
-      const speed = this.playerSpeed * g.speedMul * (g.frightened > 0 ? 0.6 : 1);
-      this._moveEntity(g, speed, dt);
-      this._wrapPosition(g);
+        if (nextDir) entity.dir = nextDir;
+      });
     }
 
     for (const g of this.ghosts) {
