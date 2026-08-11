@@ -6,7 +6,7 @@ const PADDLE_Y_INSET = 46; // distance from the bottom of the canvas to the padd
 
 const DEFAULT_PADDLE_WIDTH = 110;
 const DEFAULT_PADDLE_SPEED = 470;
-const DEFAULT_PADDLE_STEP = 46; // px nudged per chord strum, independent of how long the note rings
+const DEFAULT_PADDLE_STEP = 70; // px nudged per chord strum, independent of how long the note rings
 const DEFAULT_BALL_SPEED_START = 280;
 const DEFAULT_BALL_SPEED_MAX = 590;
 const DEFAULT_BALL_SPEED_RAMP_PER_BOUNCE = 12;
