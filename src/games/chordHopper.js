@@ -22,13 +22,20 @@ const DEFAULT_TRAFFIC_SPEED = 90;
 const DEFAULT_RIVER_SPEED = 70;
 const DEFAULT_SPAWN_GAP = 1.4;
 
-/** Maps a 6-tier difficulty level to Chord Hopper's traffic/river pace. */
+/**
+ * Maps a 6-tier difficulty level to Chord Hopper's traffic/river pace. The
+ * low end of trafficSpeed/spawnGapSec is deliberately much gentler than a
+ * straight lerp from the high end would give — the effective gap between
+ * vehicles in a lane is roughly (speed * spawnGap - vehicleWidth), and both
+ * factors shrinking together at the same rate left almost no clearance even
+ * on "Easy".
+ */
 export function hopperParamsForLevel(level) {
   const t = levelT(level);
   return {
-    trafficSpeed: lerp(55, 150, t),
+    trafficSpeed: lerp(35, 150, t),
     riverSpeed: lerp(45, 110, t),
-    spawnGapSec: lerp(1.9, 0.85, t),
+    spawnGapSec: lerp(2.8, 0.85, t),
   };
 }
 
@@ -74,7 +81,7 @@ export class ChordHopperGame extends EventTarget {
     this.traffic = TRAFFIC_ROWS.map((row, i) => ({
       row,
       dir: i % 2 === 0 ? 1 : -1,
-      speed: trafficSpeed * (0.7 + i * 0.12),
+      speed: trafficSpeed * (0.78 + i * 0.1),
       vehicles: [],
       spawnTimer: Math.random() * spawnGapSec,
     }));
@@ -163,7 +170,7 @@ export class ChordHopperGame extends EventTarget {
       lane.spawnTimer -= dt;
       if (lane.spawnTimer <= 0) {
         lane.spawnTimer = this.spawnGapSec + Math.random() * 0.6;
-        lane.vehicles.push({ x: lane.dir > 0 ? -1.2 : COLS + 0.2, width: 1.6 + Math.random() * 0.5 });
+        lane.vehicles.push({ x: lane.dir > 0 ? -1.2 : COLS + 0.2, width: 1.4 + Math.random() * 0.5 });
       }
       for (const v of lane.vehicles) v.x += (lane.dir * lane.speed * dt) / CELL;
       lane.vehicles = lane.vehicles.filter((v) => v.x > -2 && v.x < COLS + 2);
